@@ -399,6 +399,95 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+                
+  /orders:
+    get:
+      tags:
+        - Orders
+      summary: get all orders
+      description: returns a list of all orders.
+      responses:
+        '200':
+          description: orders detail
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Order'
+    post:
+      tags:
+        - Orders
+      summary: Crear un nuevo pedido
+      description: Permite crear un nuevo pedido.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderCreate'
+      responses:
+        '201':
+          description: Pedido creado con éxito.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+  /orders/{id}:
+    get:
+      tags:
+        - Orders
+      summary: Obtener un pedido
+      description: Obtiene los detalles de un pedido por su ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Pedido obtenido con éxito.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '404':
+          description: Pedido no encontrado.
+    put:
+      tags:
+        - Orders
+      summary: Actualizar un pedido
+      description: Actualiza los detalles de un pedido existente.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderUpdate'
+      responses:
+        '200':
+          description: Pedido actualizado con éxito.
+    delete:
+      tags:
+        - Orders
+      summary: Eliminar un pedido
+      description: Elimina un pedido existente por su ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Pedido eliminado con éxito.
 
 components:
   schemas:
@@ -416,8 +505,8 @@ components:
           type: string
         last_name:
           type: string
-        role_id:
-          type: string
+        role_name:
+          type: string 
     
     UserCreate:
       type: object
@@ -436,8 +525,8 @@ components:
           type: string
         last_name:
           type: string
-        role_id:
-          type: string
+        role_name:
+          type: string 
           default: "user"
     
     UserUpdate:
@@ -451,8 +540,8 @@ components:
           type: string
         last_name:
           type: string
-        role_id:
-          type: string
+        role_name:
+          type: string 
     
     Product:
       type: object
@@ -475,9 +564,10 @@ components:
     ProductCreate:
       type: object
       required:
+        - category_id
+        - description
         - name
         - price
-        - category_id
       properties:
         name:
           type: string
@@ -508,7 +598,68 @@ components:
           type: integer
         is_available:
           type: boolean
+          default: true
+
+    Order:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+            - pending
+            - completed
+            - canceled
+        total:
+          type: number
+          format: decimal
+        payment_method:
+          type: string
+        stripe_payment_intent:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    OrderCreate:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+            - pending
+            - completed
+            - canceled
+        total:
+          type: number
+          format: decimal
+        payment_method:
+          type: string
+        stripe_payment_intent:
+          type: string
+    OrderUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - pending
+            - completed
+            - canceled
+        payment_method:
+          type: string
     
+      
     Error:
       type: object
       properties:
