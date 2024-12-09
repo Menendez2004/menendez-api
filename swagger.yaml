@@ -1,56 +1,255 @@
 openapi: 3.0.0
 info:
   title: Menendez shoes API
+  description: The Shoe E-commerce API is a comprehensive solution for managing a footwear catalog and facilitating online transactions. Designed for shoe stores, this API enables efficient handling of products, stock control, order processing, and user management
+  contact: 
+    name: kevin menendez
+    url: https://github.com/Menendez2004
   version: 1.0.0
-  description: E-commerce API for Menendez shoes with comprehensive error handling
+
+
+servers:
+  - url: https://{environment}.example.com/api
+    variables:
+      environment:
+        default: staging
+        enum:
+          - staging
+          - production
+          - development
 
 tags:
+  - name: Auths
+    description: Authentufication to entrie to the e-comers
   - name: Users
-    description: Operations related to users 
+    description: Operations related to users
   - name: Products
     description: Operations related to products in the e-commerce platform
+  - name: Categories
+    description: Kind of product tha the e-commers manage
   - name: Orders
-    description: Operations related to orders 
-  - name: Cart
+    description: Operations related to orders
+  - name: Carts
     description: Operations related to user cart
-  - name: Favorites
+  - name: Favorite Products
     description: Operations related to favorite products from the user
+  - name: payments
+    description: (pending) related to product payments (card) (need to learn more about stripe)
 
 paths:
-  /users:
+  /v1/auths/login:
+    post:
+      tags:
+        - Auths
+      summary: User login
+      description: Authenticates a user and returns a token for accessing protected resources.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+                password:
+                  type: string
+                  format: password
+                  example: "password123"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  user:
+                    $ref: "#/components/schemas/User"
+                example:
+                  token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  user:
+                    id: 
+                     $ref: "#/components/schemas/UUID"
+                    username: "johndoe"
+                    email: "johndoe@example.com"
+                    first_name: "John"
+                    last_name: "Doe"
+                    role_name: "customer"
+        "400":
+          description: Invalid login credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                message: "Invalid email or password"
+                code: 400
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                message: "An unexpected error occurred"
+                code: 500
+
+
+  /v1/auths/register:
+    post:
+      tags:
+        - Auths
+      summary: User registration
+      description: Registers a new user and returns their account details.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserCreate"
+      responses:
+        "201":
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+              example:
+                id:
+                 $ref: "#/components/schemas/UUID"
+                username: "janedoe"
+                email: "janedoe@example.com"
+                first_name: "Jane"
+                last_name: "Doe"
+                role_name: "customer"
+        "400":
+          description: Invalid registration details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                message: "Email is required"
+                code: 400
+        "409":
+          description: User already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                message: "User already exists"
+                code: 409
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                message: "An unexpected error occurred"
+                code: 500
+
+  /v1/auths/logout:
+    post:
+      tags:
+        - Auths
+      summary: User logout
+      description: Logs out the authenticated user by invalidating their token.
+      security:
+        - api_key: []
+      responses:
+        "200":
+          description: Logout successful
+        "401":
+          description: Unauthorized - No valid token provided
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /v1/users:
     get:
       tags:
         - Users
       summary: Get all users
       description: Retrieve a list of all users in the system.
       responses:
-        '200':
+        "200":
           description: A list of users
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/User'
-        '400':
+               example:
+                - uuid: '40a8f5b0-7d6e-4548-90d4-1090647c1ed5'
+                  first_name: "John"
+                  last_name: "Doe"
+                  username: "johndoe"
+                  email: "johndoe@example.com"
+                  password: 'abc123'
+                  address:
+                  - street: "123 Main St"
+                    city: "Springfield"
+                    state: "IL"
+                    postalCode: "62704"
+                    country: "USA"
+                  role_name: "client"
+              
+                - uuid: '1beafdee-f558-4603-8ed7-f3a0e97f24b3'
+                  first_name: "Jane"
+                  last_name: "Doe"
+                  username: "janedoe"
+                  email: "janedoe@example.com"
+                  password: 'abc123'
+                  address:
+                  - street: "Calle cirunvalacion"
+                    city: "Soyapango"
+                    state: "San Salvador"
+                    postalCode: "CP 1116"
+                    country: "El Salvador"
+                
+        "400":
           description: Invalid request parameters
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-
-        '403':
+                $ref: "#/components/schemas/Error"
+              example:
+                message: "Invalid query parameter"
+                code: 400
+        "403":
           description: Forbidden - Insufficient permissions
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '500':
+                $ref: "#/components/schemas/Error"
+              example:
+                message: "You do not have access to this resource"
+                code: 403
+        "500":
           description: Internal server error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
+              example:
+                message: "An unexpected error occurred"
+                code: 500
     post:
       tags:
         - Users
@@ -61,70 +260,98 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserCreate'
+              $ref: "#/components/schemas/UserCreate"
       responses:
-        '201':
+        "201":
           description: User created successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
-        '400':
+               example:
+                - uuid: '40a8f5b0-7d6e-4548-90d4-1090647c1ed5'
+                  first_name: "John"
+                  last_name: "Doe"
+                  username: "johndoe"
+                  email: "johndoe@example.com"
+                  password: 'abc123'
+                  address:
+                  - street: "Calle cirunvalacion"
+                    city: "Soyapango"
+                    state: "San Salvador"
+                    postalCode: "CP 1116"
+                    country: "El Salvador"
+                  role_name: "client"
+              
+        "400":
           description: Invalid user data
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '409':
+                $ref: "#/components/schemas/Error"
+        "409":
           description: User or email already exists
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '500':
+                $ref: "#/components/schemas/Error"
+        "500":
           description: Internal server error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
-  /users/{id}:
+  /v1/users/{id}:
     get:
       tags:
         - Users
       summary: Get a user by ID
-      description: Retrieve details of a specific user by their ID.
+      description: Usage:<br /><ul><li>User UUID is required to get the information</li></ul>
       parameters:
         - name: id
           in: path
+          description: The user UUID to request resource data for.
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/UUID'
       responses:
-        '200':
+        "200":
           description: User details
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-        '400':
+              example:
+                - uuid: '40a8f5b0-7d6e-4548-90d4-1090647c1ed5'
+                  first_name: "John"
+                  last_name: "Doe"
+                  username: "johndoe"
+                  email: "johndoe@example.com"
+                  password: 'abc123'
+                  address:
+                  - street: "Calle cirunvalacion"
+                    city: "Soyapango"
+                    state: "San Salvador"
+                    postalCode: "CP 1116"
+                    country: "El Salvador"
+                  role_name: "manager"
+              
+        "400":
           description: Invalid user ID
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '404':
+                $ref: "#/components/schemas/Error"
+        "404":
           description: User not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '500':
+                $ref: "#/components/schemas/Error"
+        "500":
           description: Internal server error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
     put:
       tags:
         - Users
@@ -133,112 +360,143 @@ paths:
       parameters:
         - name: id
           in: path
+          description: The user UUID to update all data of the user
+                        resource data for.
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/UUID'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserUpdate'
+              $ref: "#/components/schemas/UserUpdate"
       responses:
-        '200':
+        "200":
           description: User updated successfully
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-        '400':
+              example:
+                - uuid: '40a8f5b0-7d6e-4548-90d4-1090647c1ed5'
+                  first_name: "Jonathan"
+                  last_name: "alvares"
+                  username: "jonaAlva"
+                  email: "jonAlva@example.com"
+                  password: 'abc1234'
+                  address:
+                  - street: "Calle Matazano"
+                    city: "Soyapango"
+                    state: "San Salvador"
+                    postalCode: "CP 1116"
+                    country: "El Salvador"
+                  role_name: "manager"
+        "400":
           description: Invalid update data
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '404':
+                $ref: "#/components/schemas/Error"
+        "404":
           description: User not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '409':
+                $ref: "#/components/schemas/Error"
+        "409":
           description: Conflict with existing data
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '500':
+                $ref: "#/components/schemas/Error"
+        "500":
           description: Internal server error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-    delete:
+                $ref: "#/components/schemas/Error"
+                
+  /v1/users/{id}/status:
+    patch:
       tags:
         - Users
-      summary: Delete a user by ID
-      description: Remove a user from the system by their ID.
+      summary: Update the state of the user 
+      description: To update the client's status in case they never have registered orders
       parameters:
         - name: id
           in: path
+          description: The user UUID to update the state of the user.
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/UUID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateStatus"
       responses:
-        '200':
-          description: User deleted successfully
-        '400':
+        "200":
+          description: status updated successfully
+          content:
+           aplication/json:
+            schema: 
+              $ref: '#/components/schemas/UpdateStatus'
+        "400":
           description: Invalid user ID
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '404':
+                $ref: "#/components/schemas/Error"
+        "404":
           description: User not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '500':
+                $ref: "#/components/schemas/Error"
+        "500":
           description: Internal server error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
-  /products:
+  /v1/roducts:
     get:
       tags:
         - Products
       summary: Get all products
       description: Retrieve a list of all products available in the store.
       responses:
-        '200':
+        "200":
           description: A list of products
           content:
             application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Product'
-        '400':
+              example:
+                - uuid: "123e4567-e89b-12d3-a456-426614174000"
+                  name: "Zapatos Deportivos"
+                  description: "Zapatos ligeros y cómodos, ideales para actividades deportivas."
+                  price: 99.99
+                  category_id: "456e1234-e89b-98d3-a123-426614171234"
+                  stock: 25
+                  is_available: true
+        "400":
           description: Invalid request parameters
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '401':
+                $ref: "#/components/schemas/Error"
+        "401":
           description: Unauthorized access
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '500':
+                $ref: "#/components/schemas/Error"
+        "500":
           description: Internal server error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
     post:
       tags:
         - Products
@@ -249,40 +507,46 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProductCreate'
+              $ref: "#/components/schemas/ProductCreate"
       responses:
-        '201':
+        "201":
           description: Product created successfully
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/Product'
-        '400':
+              example:
+                - uuid: "123e4567-e89b-12d3-a456-426614174000"
+                  name: "Sport Shoes"
+                  description: "Light and comfortable shoes, ideal for sports activities"
+                  price: 99.99
+                  category_id: "456e1234-e89b-98d3-a123-426614171234"
+                  stock: 25
+                  is_available: true
+        "400":
           description: Invalid product data
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '403':
+                $ref: "#/components/schemas/Error"
+        "403":
           description: Forbidden - Insufficient permissions
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '409':
+                $ref: "#/components/schemas/Error"
+        "409":
           description: Conflict with existing product
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '500':
+                $ref: "#/components/schemas/Error"
+        "500":
           description: Internal server error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
-  /products/{id}:
+  /v1/products/{id}:
     get:
       tags:
         - Products
@@ -291,34 +555,42 @@ paths:
       parameters:
         - name: id
           in: path
+          description: The product UUID to update all data of the product
+                        resource data for.
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/UUIDShoes'
       responses:
-        '200':
+        "200":
           description: Product details
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/Product'
-        '400':
+              example:
+                - uuid: "123e4567-e89b-12d3-a456-426614174000"
+                  name: "Sport Shoes"
+                  description: "Light and comfortable shoes, ideal for sports activities."
+                  price: 99.99
+                  category_id: "456e1234-e89b-98d3-a123-426614171234"
+                  stock: 25
+                  is_available: false
+        "400":
           description: Invalid product ID
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '404':
+                $ref: "#/components/schemas/Error"
+        "404":
           description: Product not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '500':
+                $ref: "#/components/schemas/Error"
+        "500":
           description: Internal server error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
     put:
       tags:
         - Products
@@ -327,46 +599,54 @@ paths:
       parameters:
         - name: id
           in: path
+          description: The product UUID to update all data of the product
+                        resource data for.
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/UUIDShoes'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ProductUpdate'
+              $ref: "#/components/schemas/ProductUpdate"
       responses:
-        '200':
+        "200":
           description: Product updated successfully
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/Product'
-        '400':
+              example:
+                - uuid: "123e4567-e89b-12d3-a456-426614174000"
+                  name: "casual shoes"
+                  description: "Light and comfortable shoes, ideal for work events and going to school"
+                  price: 99.99
+                  category_id: "456e1234-e89b-98d3-a123-426614171234"
+                  stock: 25
+                  is_available: true
+        "400":
           description: Invalid update data
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '404':
+                $ref: "#/components/schemas/Error"
+        "404":
           description: Product not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '409':
+                $ref: "#/components/schemas/Error"
+        "409":
           description: Conflict with existing data
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '500':
+                $ref: "#/components/schemas/Error"
+        "500":
           description: Internal server error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
     delete:
       tags:
         - Products
@@ -375,139 +655,787 @@ paths:
       parameters:
         - name: id
           in: path
+          description: The product UUID to update all data of the product
+                        resource data for.
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/UUIDShoes'
       responses:
-        '200':
+        "200":
           description: Product deleted successfully
-        '400':
+        "400":
           description: Invalid product ID
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '404':
-          description: Product not found
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Product not found or doesn't exist
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '500':
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+                
+  /v1/products/{id}/status:
+    patch:
+      tags:
+        - Products
+      summary: Update the state of the product 
+      description: To update the product if is out of stock and will be restored later 
+      parameters:
+        - name: id
+          in: path
+          description: The product UUID to update the state of the product.
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateStatus'
+      responses:
+        "200":
+          description: status updated successfully
+          content:
+           aplication/json:
+            schema: 
+              $ref: '#/components/schemas/UpdateStatus'
+        "400":
+          description: Invalid product ID
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: product not found or doesn't exist
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+                
+                
+                
+                
+                
+  /v1/categories:
+    get:
+      tags:
+        - Categories
+      summary: Get all categories
+      description: Retrieve a list of all categories.
+      responses:
+        "200":
+          description: A list of categories.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+        "500":
           description: Internal server error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-                
-  /orders:
+    post:
+      tags:
+        - Categories
+      summary: Create a new category
+      description: Add a new category to the database.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryInput'
+      responses:
+        "201":
+          description: Category created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/categories/{id}:
+    get:
+      tags:
+        - Categories
+      summary: Get a category by ID
+      description: Retrieve a specific category by its ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the category to retrieve.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The requested category.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        "404":
+          description: Category not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - Categories
+      summary: Update a category
+      description: Update the details of an existing category by its ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the category to update.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryInput'
+      responses:
+        "200":
+          description: Category updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Category not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - Categories
+      summary: Delete a category
+      description: Remove a category from the database by its ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the category to delete.
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Category deleted successfully.
+        "404":
+          description: Category not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    
+  /v1/clients/orders/order-client:
     get:
       tags:
         - Orders
       summary: get all orders
       description: returns a list of all orders.
       responses:
-        '200':
+        "200":
           description: orders detail
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Order'
+                  $ref: "#/components/schemas/Order"
+                  
+        "400":
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                message: "Invalid query parameter"
+                code: 400
+        "403":
+          description: Forbidden - Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                message: "You do not have access to this resource"
+                code: 403
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              example:
+                message: "An unexpected error occurred"
+                code: 500
+                
     post:
       tags:
         - Orders
-      summary: Crear un nuevo pedido
-      description: Permite crear un nuevo pedido.
+      summary: create a new order 
+      description: allows to create a new order.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/OrderCreate'
+              $ref: "#/components/schemas/OrderCreate"
       responses:
-        '201':
+        "201":
           description: Pedido creado con éxito.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Order'
-  /orders/{id}:
-    get:
-      tags:
-        - Orders
-      summary: Obtener un pedido
-      description: Obtiene los detalles de un pedido por su ID.
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Pedido obtenido con éxito.
+                $ref: "#/components/schemas/Order"
+                
+        "400":
+          description: Invalid order data
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Order'
-        '404':
-          description: Pedido no encontrado.
-    put:
+                $ref: "#/components/schemas/Error"
+        "403":
+          description: Forbidden - Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+                
+  /v1/clients/orders/order-details/{id}:
+    get:
       tags:
         - Orders
-      summary: Actualizar un pedido
-      description: Actualiza los detalles de un pedido existente.
+      summary: get an order
+      description: get the details of the order
       parameters:
         - name: id
           in: path
+          description: The product UUID to update the state of the product.
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/UUIDOrder'
+      responses:
+        "200":
+          description: order was get succesfuly
+          content:
+            application/json:
+               example:
+                - uuid: "8e700b8b-e32c-4f21-b44c-53cff3394f13"
+                  user_uuid: "40a8f5b0-7d6e-4548-90d4-1090647c1ed5"
+                  status: "completed"
+                  total: 250.75
+                  payment_method: "credit_card"
+                  stripe_payment_intent: "pi_1A2B3C4D5E6F7G8H9I0J"
+                  created_at: "2024-12-09T04:48:39.189Z"
+                  updated_at: "2024-12-09T05:00:00.000Z"
+        "400":
+          description: Invalid product ID
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+                
+                
+  /v1/clients/orders/order-client/{id}/status:
+    patch:
+      tags:
+        - Orders
+      summary: update an order
+      description: update an existing order
+      parameters:
+        - name: id
+          in: path
+          description: The product UUID to update the state of the product.
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUIDOrder'
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/OrderUpdate'
+              $ref: "#/components/schemas/OrderUpdate"
       responses:
-        '200':
-          description: Pedido actualizado con éxito.
+        "200":
+          description: Order updated succesfully
+          content:
+            application/json:
+               example:
+                status: completed
+        "400":
+          description: Invalid update data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: Conflict with existing data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+                
+  /v1/clients/orders/order-client/{id}:
     delete:
       tags:
         - Orders
-      summary: Eliminar un pedido
-      description: Elimina un pedido existente por su ID.
+      summary: Delete a order by ID
+      description: Remove an order from the system by their ID.
       parameters:
         - name: id
           in: path
+          description: The product UUID to update the state of the product.
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUIDOrder'
+      responses:
+        "204":
+          description: Order was deleted succesfully
+        "400":
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+                
+                
+  /v1/users/carts/user-cart/{id}:
+    get:
+      tags: 
+        - Carts
+      summary: Get the cart of a specific user
+      description: Get the information to ensure what kind of product is going to be paid.
+      parameters:
+        - name: id
+          in: path
+          description: The cart UUID to get the details of the cart.
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUIDCarts'
+      responses:
+        "200":
+          description: Information of the cart was successfully retrieved.
+          content:
+            application/json:
+              example:
+                - id: "dfda53b4-b078-49fa-a52d-8938fdc396ee"
+                  user_id: "40a8f5b0-7d6e-4548-90d4-1090647c1ed5"
+                  product_id: "123e4567-e89b-12d3-a456-426614174000"
+                  quantity: 6
+                  created_at: "2024-12-09T04:48:39.189Z"
+        "400":
+          description: Invalid product ID.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Cart not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /v1/users/carts/cart:
+    post:
+      tags: 
+        - Carts
+      summary: Create a new cart entry
+      description: Add a product to the user's cart.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Carts'
+      responses:
+        "201":
+          description: Cart entry created successfully.
+          content:
+            application/json:
+              example:
+                id: "dfda53b4-b078-49fa-a52d-8938fdc396ee"
+                user_id: "40a8f5b0-7d6e-4548-90d4-1090647c1ed5"
+                product_id: "123e4567-e89b-12d3-a456-426614174000"
+                quantity: 2
+                created_at: "2024-12-09T04:48:39.189Z"
+        "400":
+          description: Invalid input.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+                
+  /v1/carts/users/user-cart/{id}:
+    put:
+      tags: 
+        - Carts
+      summary: Update a cart entry by ID
+      description: Update the details of a cart entry by ID.
+      parameters:
+        - name: id
+          in: path
+          description: The cart UUID to update.
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUIDCarts'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Carts'
+      responses:
+        "200":
+          description: Cart entry updated successfully.
+          content:
+            application/json:
+              example:
+              - id: "dfda53b4-b078-49fa-a52d-8938fdc396ee"
+                user_id: "40a8f5b0-7d6e-4548-90d4-1090647c1ed5"
+                product_id: "123e4567-e89b-12d3-a456-426614174000"
+                quantity: 5
+                created_at: "2024-12-09T04:48:39.189Z"
+        "400":
+          description: Invalid input.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Cart entry not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+                
+    patch:
+      tags: 
+        - Carts
+      summary: Update the quantity of a cart entry
+      description: Update only the quantity field of a specific cart entry by ID.
+      parameters:
+        - name: id
+          in: path
+          description: The cart UUID to update.
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUIDCarts'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                quantity:
+                  type: integer
+      responses:
+        "200":
+          description: Cart quantity updated successfully.
+          content:
+            application/json:
+              example:
+                id: "dfda53b4-b078-49fa-a52d-8938fdc396ee"
+                user_id: "40a8f5b0-7d6e-4548-90d4-1090647c1ed5"
+                product_id: "123e4567-e89b-12d3-a456-426614174000"
+                quantity: 8
+                created_at: "2024-12-09T04:48:39.189Z"
+        "400":
+          description: Invalid input.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Cart entry not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    delete:
+      tags: 
+        - Carts
+      summary: Delete a cart entry
+      description: Remove a cart entry by ID.
+      parameters:
+        - name: id
+          in: path
+          description: The cart UUID to delete.
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUIDCarts'
+      responses:
+        "204":
+          description: Cart entry deleted successfully.
+        "404":
+          description: Cart entry not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+                
+  /users/{userId}/favorite-products/{productId}/favorite:
+    post:
+      tags:
+        - Favorite Products
+      summary: Mark a product as a favorite
+      description: Mark a specific product as a favorite for the given user.
+      parameters:
+        - name: userId
+          in: path
+          description: The UUID of the user.
           required: true
           schema:
             type: string
+            format: uuid
+        - name: productId
+          in: path
+          description: The UUID of the product to be marked as favorite.
+          required: true
+          schema:
+            type: string
+            format: uuid
       responses:
-        '204':
-          description: Pedido eliminado con éxito.
+        "201":
+          description: Product successfully marked as favorite.
+          content:
+            application/json:
+              example:
+                id: "8b77b15a-64e2-42d1-9b23-2b7df0e66db1"
+                user_id: "a1c3d5f7-12b6-4d3a-8e2c-9e4a9c3a01b1"
+                product_id: "b1a9c7f3-d4c2-4d9a-8b5e-7c4d9a8f3e4d"
+                created_at: "2024-12-09T10:20:45.123Z"
+        "400":
+          description: Invalid input or product is already marked as favorite.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: User or product not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+    delete:
+      tags:
+        - Favorite Products
+      summary: Remove a product from favorites
+      description: Remove a specific product from the user's list of favorites.
+      parameters:
+        - name: userId
+          in: path
+          description: The UUID of the user.
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: productId
+          in: path
+          description: The UUID of the product to be removed from favorites.
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Product successfully removed from favorites.
+        "400":
+          description: Invalid input or product is not marked as favorite.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: User or product not found.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+
+
+    
+    
+
 
 components:
   schemas:
-  
+          
+    Address:
+      type: object
+      properties:
+        street:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        postalCode:
+          type: string
+        country:
+          type: string
+          
     User:
       type: object
       properties:
-        id:
+        uuid:
           type: string
-        username:
-          type: string
-        email:
-          type: string
+          format: uuid
         first_name:
           type: string
         last_name:
           type: string
+        username:
+           type: string
+        email:
+          type: string
+        password: 
+          type: string
+          format: password
         role_name:
-          type: string 
-    
+          type: string
+        addresses:
+          type: array
+          items: 
+            $ref: '#/components/schemas/Address'
+
     UserCreate:
       type: object
       required:
@@ -515,20 +1443,27 @@ components:
         - email
         - password
       properties:
+        first_name:
+          type: string
+        last_name:
+          type: string
         username:
           type: string
         email:
           type: string
         password:
           type: string
-        first_name:
-          type: string
-        last_name:
-          type: string
+        is_active:
+          type: boolean
+          default: true
         role_name:
-          type: string 
-          default: "user"
-    
+          type: string
+          default: "client"
+        addresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/Address'
+
     UserUpdate:
       type: object
       properties:
@@ -541,26 +1476,8 @@ components:
         last_name:
           type: string
         role_name:
-          type: string 
-    
-    Product:
-      type: object
-      properties:
-        id:
           type: string
-        name:
-          type: string
-        description:
-          type: string
-        price:
-          type: number
-        category_id:
-          type: string
-        stock:
-          type: integer
-        is_available:
-          type: boolean
-    
+
     ProductCreate:
       type: object
       required:
@@ -582,7 +1499,10 @@ components:
         is_available:
           type: boolean
           default: true
-    
+
+              
+        
+
     ProductUpdate:
       type: object
       properties:
@@ -599,7 +1519,29 @@ components:
         is_available:
           type: boolean
           default: true
-
+          
+          
+    Category:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        is_active:
+          type: boolean
+    CategoryInput:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        is_active:
+          type: boolean
     Order:
       type: object
       properties:
@@ -628,6 +1570,7 @@ components:
         updated_at:
           type: string
           format: date-time
+          
     OrderCreate:
       type: object
       properties:
@@ -647,6 +1590,7 @@ components:
           type: string
         stripe_payment_intent:
           type: string
+          
     OrderUpdate:
       type: object
       properties:
@@ -656,10 +1600,100 @@ components:
             - pending
             - completed
             - canceled
-        payment_method:
-          type: string
     
+    Carts:
+      type: object
+      properties:
+          id:
+            type: string
+            format: uuid
+            description: "Unique identifier for the cart entry"
+          user_id:
+            type: string
+            format: uuid
+            description: "Unique identifier of the user who owns the cart"
+          product_id:
+            type: string
+            format: uuid
+            description: "Unique identifier of the product in the cart"
+          quantity:
+            type: integer
+            description: "Number of items of the product in the cart"
+          created_at:
+            type: string
+            format: timestamp
+            description: "Timestamp indicating when the cart entry was created"
+      required:
+         - id
+         - user_id
+         - product_id
+         - quantity
+         - created_at
+         
+         
+    FavoriteProduct:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the favorite entry.
+        user_id:
+          type: string
+          format: uuid
+          description: UUID of the user.
+        product_id:
+          type: string
+          format: uuid
+          description: UUID of the product marked as favorite.
+        created_at:
+          type: string
+          format: date-time
+          description: Timestamp indicating when the product was marked as favorite.
+      required:
+        - id
+        - user_id
+        - product_id
+        - created_at
+    
+    
+    UUID:
+      type: string
+      format: uuid
+      description: A universally unique identifier (UUID).
+      example: "40a8f5b0-7d6e-4548-90d4-1090647c1ed5"
       
+      
+    UUIDShoes:
+      type: string
+      format: uuid
+      description: A universally unique identifier (UUID).
+      example: '123e4567-e89b-12d3-a456-426614174000'
+      
+    UUIDOrder:
+      type: string
+      format: uuid
+      description: A universally unique identifier (UUID).
+      example: '8e700b8b-e32c-4f21-b44c-53cff3394f13'
+      
+      
+    UUIDCarts:
+      type: string
+      format: uuid
+      description: A universally unique identifier (UUID).
+      example: 'dfda53b4-b078-49fa-a52d-8938fdc396ee'
+      
+    UpdateStatus:
+      type: object
+      properties:
+        is_active:
+          type: boolean
+          description: Indicates whether the user is active or not.
+      required:
+        - is_active
+        
+        
+
     Error:
       type: object
       properties:
@@ -669,3 +1703,8 @@ components:
           type: string
         details:
           type: string
+          
+  securitySchemes:
+    api_key:
+      type: http
+      scheme: bearer
