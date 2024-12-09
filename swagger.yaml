@@ -1707,4 +1707,4 @@ components:
   securitySchemes:
     api_key:
       type: http
-      scheme: bearer
+      scheme: bearer <your token>
