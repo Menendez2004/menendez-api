@@ -41,7 +41,7 @@ tags:
 
 
 paths:
-  /v1/auth/login:
+  /v1/auth/sign-in:
     post:
       tags:
         - Auths
@@ -930,7 +930,7 @@ paths:
         "500":
           $ref: "#/components/responses/500"
     
-  /v1/clients/orders/order-client:
+  /v1/clients/orders:
     get:
       tags:
         - Orders
@@ -991,7 +991,7 @@ paths:
           $ref: "#/components/responses/500"
                 
                 
-  /v1/clients/orders/order-client-details/{id}:
+  /v1/orders/client/{id}:
     get:
       tags:
         - Orders
@@ -1030,7 +1030,7 @@ paths:
           $ref: "#/components/responses/500"
                 
                 
-  /v1/clients/orders/order-client/{id}/status:
+  /v1/clients/orders/{id}:
     patch:
       tags:
         - Orders
@@ -1067,7 +1067,7 @@ paths:
         "500":
           $ref: "#/components/responses/500" 
           
-  /v1/clients/orders/order-client/{id}:
+  /v1/clients/{id}orders/{id}:
     delete:
       tags:
         - Orders
@@ -1095,7 +1095,7 @@ paths:
           $ref: "#/components/responses/500"
                 
                 
-  /v1/users/carts/users-cart/{id}:
+  /v1/users/carts/{id}:
     get:
       tags: 
         - Carts
@@ -1167,7 +1167,7 @@ paths:
           $ref: "#/components/responses/500"
 
                 
-  /v1/carts/users/user-cart/{id}:
+  /v1/carts/users/{id}:
     put:
       tags: 
         - Carts
