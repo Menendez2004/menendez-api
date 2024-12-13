@@ -27,6 +27,8 @@ tags:
     description: Endpoints for `managing and retrieving` information about `products` available in the E-commerce platform.
   - name: Favorite Products
     description: Endpoints for managing and viewing a `user's favorite products` within the E-commerce platform.
+  - name: Emails Senders
+    description: These endpoints `handle` the process of `notifying users` via `email` when products they have previously liked or favorited are nearing `out-of-stock` status.
   - name: Categories
     description: Endpoints for `managing and retrieving product categories` available in the E-commerce platform.
   - name: Orders
@@ -64,7 +66,7 @@ paths:
                 password:
                   type: string
                   format: password
-                  example: "password123"
+                  example: "incriptedPassword!"
       responses:
         "204":
           $ref: '#/components/responses/204'
@@ -114,7 +116,7 @@ paths:
       tags:
         - Auths
       summary:  Logs out the authenticated user.
-      description: This endpoint invalidates the user's authentication token, effectively logging them out of the system. Access to protected resources will require a new valid token.
+      description: This endpoint securely invalidates the user's authentication token, terminating their active session and requiring re-authentication for access to protected resources.
       security:
         - bearerAuth: []
       responses:
@@ -122,6 +124,62 @@ paths:
           $ref: "#/components/responses/204"
         "500":
           $ref: "#/components/responses/500"
+          
+          
+  /auth/forgot:
+    post:
+      tags:
+        - Auths
+      summary: 'Initiates the password recovery process. '
+      description:
+       This endpoint verifies if the user has exceeded the recovery attempt limit within a 24-hour period. If the limit has not been reached, the recovery process proceeds. Exceeding the limit results in account limitations. This public API is subject to rate limiting.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            example:
+              email: example1234@mail.com
+      responses:
+        '200':
+          description: 
+            Increases the count of attempts, adds a timestamp. Sets the reset token. Adds an email to the email queue with a link with the attempt token.
+        '400':
+          $ref: "#/components/responses/400"
+        '404':
+          $ref: "#/components/responses/404"
+        '429':
+          $ref: '#/components/responses/429'
+  /auth/reset:
+    post:
+      tags:
+        - Auths
+      security:
+        - bearerAuth: []
+      summary: "Updates the user's password."
+      description: >-
+        Auth: Public
+        
+        
+        Verifies the validity and expiration status (24 hours) of the provided reset password token, checks if the new password meets the required parameters for minimum and maximum length, and if valid, hashes and updates the password. Returns a 404 error if the token is not found.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            example:
+              reset_token: TE3fEU8S80rg1EelA3jmEetVokFvLgTK
+              password: definitelywontforget!213
+              repeat_password: definitelywontforget!213
+      responses:
+          '200':
+            description: reset successfull. Goes to login screen, does not auto login.
+          '404':
+            $ref: "#/components/responses/404"
+          '400':
+            $ref: "#/components/responses/400"
+          '429':
+            $ref: '#/components/responses/429'
 
 
 
@@ -145,7 +203,7 @@ paths:
                   last_name: "Doe"
                   username: "johndoe"
                   email: "johndoe@example.com"
-                  password: 'abc123'
+                  password: 'incriptedPassword!'
                   address:
                   - street: "123 Main St"
                     city: "Springfield"
@@ -159,6 +217,7 @@ paths:
                   last_name: "Doe"
                   username: "janedoe"
                   email: "janedoe@example.com"
+                  password: "incriptedPassword!"
                   address:
                   - street: "Calle cirunvalacion"
                     city: "Soyapango"
@@ -201,7 +260,7 @@ paths:
                   last_name: "Doe"
                   username: "johndoe"
                   email: "johndoe@example.com"
-                  password: 'abc123'
+                  password: 'incriptedPassword!'
                   address:
                   - street: "Calle cirunvalacion"
                     city: "Soyapango"
@@ -248,6 +307,7 @@ paths:
                   last_name: "Doe"
                   username: "johndoe"
                   email: "johndoe@example.com"
+                  password: "incriptedPassword!"
                   address:
                   - street: "Calle cirunvalacion"
                     city: "Soyapango"
@@ -297,7 +357,6 @@ paths:
                   last_name: "alvares"
                   username: "jonaAlva"
                   email: "jonAlva@example.com"
-                  password: 'abc1234'
                   address:
                   - street: "Calle Matazano"
                     city: "Soyapango"
@@ -351,6 +410,88 @@ paths:
           $ref: "#/components/responses/403"
         "500":
           $ref: "#/components/responses/500"
+          
+          
+  /emails:
+    post:
+      tags:
+        - automatic
+      security:
+        - bearerAuth: []
+      summary: 'Queues an email for sending.'
+      description: 'his endpoint adds an email to a queue for asynchronous processing and sending by a worker process. Requires Bearer token authentication. A 404 Not Found error is returned if any specified attachments cannot be located.'
+      requestBody:
+        content:
+          application/json:
+            example:
+              sender:
+                name: Marketing Team
+                address: juanitoperez@email.com
+  
+              recipients:
+                - name: John Doe
+                  address: example@gmail.com
+                - name: Jhon perez # Example of multiple recipients
+                  address: jhonPerz@example.net
+  
+              reply_to: job_Email@email.com
+  
+              subject: "Stock for {product_name} is low!"
+  
+              content:
+                text: "The {product_name} you liked has only {quantity} left."
+                html: "<h1>The {product_name} you liked has only {quantity} units left!</h1><img src='{product_image_url}' alt='{product_name} Image'>"
+  
+              attachments:
+                - id: 1
+                  filename: product_image.jpg
+                  content_type: image/jpeg
+                - id: 2
+                  filename: product_image.jpg
+                  content_type: image/jpeg
+
+
+      responses:
+        '202':
+          description: email successfully added to queue
+        '400':
+          $ref: "#/components/responses/400"
+        '401':
+          $ref: '#/components/responses/401'
+        '404':
+          $ref: "#/components/responses/404"
+          
+          
+  /emails/{id}:
+    put:
+      tags:
+        - automatic
+      security:
+        - bearerAuth: []
+      summary: 'Updates the status of an email job'
+      description: Thisendpoint is designed to efficiently retrieve and lock email objects. If the necessary parameters are included in the request, the email object is returned, allowing for immediate processing and preventing concurrent modifications.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            example:
+              new_status: 5
+              include_job: true
+      responses:
+        '200':
+          description: status updated, includes email object if requested
+        '404':
+          $ref: "#/components/responses/404"
+        '400':
+          $ref: "#/components/responses/400"
+        '401':
+          $ref: "#/components/responses/401"
 
 
   /v1/products:
