@@ -930,7 +930,7 @@ paths:
         "500":
           $ref: "#/components/responses/500"
     
-  /v1/clients/orders:
+  /v1/orders:
     get:
       tags:
         - Orders
@@ -957,7 +957,7 @@ paths:
         "500":
           $ref: "#/components/responses/500"
 
-                
+  /v1/clients/{Id}/orders:      
     post:
       tags:
         - Orders
@@ -991,7 +991,7 @@ paths:
           $ref: "#/components/responses/500"
                 
                 
-  /v1/orders/client/{id}:
+  /v1/orders/{Id}:
     get:
       tags:
         - Orders
@@ -1030,7 +1030,33 @@ paths:
           $ref: "#/components/responses/500"
                 
                 
-  /v1/clients/orders/{id}:
+    delete:
+      tags:
+        - Orders
+      summary: Delete a order by ID
+      description:  Delete an order from the system permanently using its unique identifier (UUID). Once deleted, the order cannot be restored.
+      security: 
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          description: The product UUID to update the state of the product.
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        "204":
+          $ref: "#/components/responses/204"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: '#/components/responses/401'
+        "403":
+          $ref: "#/components/responses/403"
+        "500":
+          $ref: "#/components/responses/500"
+          
+  /v1/orders/{orderId}/status:
     patch:
       tags:
         - Orders
@@ -1067,32 +1093,6 @@ paths:
         "500":
           $ref: "#/components/responses/500" 
           
-  /v1/clients/{id}orders/{id}:
-    delete:
-      tags:
-        - Orders
-      summary: Delete a order by ID
-      description:  Delete an order from the system permanently using its unique identifier (UUID). Once deleted, the order cannot be restored.
-      security: 
-        - bearerAuth: []
-      parameters:
-        - name: id
-          in: path
-          description: The product UUID to update the state of the product.
-          required: true
-          schema:
-            $ref: '#/components/schemas/UUID'
-      responses:
-        "204":
-          $ref: "#/components/responses/204"
-        "400":
-          $ref: "#/components/responses/400"
-        "401":
-          $ref: '#/components/responses/401'
-        "403":
-          $ref: "#/components/responses/403"
-        "500":
-          $ref: "#/components/responses/500"
                 
                 
   /v1/users/carts/{id}:
