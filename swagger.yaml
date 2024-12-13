@@ -66,27 +66,8 @@ paths:
                   format: password
                   example: "password123"
       responses:
-        "200":
-          description: Login successful
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  token:
-                    type: string
-                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-                  user:
-                    $ref: "#/components/schemas/User"
-                example:
-                  token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-                  user:
-                    id: '0a8f5b0-7d6e-4548-90d4-1090647c1ed5'
-                    username: "johndoe"
-                    email: "johndoe@example.com"
-                    first_name: "John"
-                    last_name: "Doe"
-                    role_name: "customer"
+        "204":
+          $ref: '#/components/responses/204'
         "401":
           $ref: '#/components/responses/401'
 
@@ -1563,12 +1544,9 @@ components:
   responses:
   
       204:
-        description: the request was successful
-        content:
-            application/json: 
-              example:
-                message: "The request was completed successfully "
-                code: 204
+        description: Resource deleted successfully. No content to return.
+        
+        
       401:
         description: Unauthorized - Invalid or expired token.
         content:
@@ -1632,4 +1610,4 @@ components:
       type: http
       scheme: bearer 
       bearerFormat: JWT <your token>
-      description: "JWT Bearer token to access these api endpoints"
+      description: "JWT Bearer token required for authentication. Obtain a token via the /auth/login endpoint"
