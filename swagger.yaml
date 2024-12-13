@@ -77,7 +77,7 @@ paths:
           $ref: '#/components/responses/500'
 
 
-  /v1/auth/client-register:
+  /v1/auth/register:
     post:
       tags:
         - Auths
@@ -111,7 +111,7 @@ paths:
         "500":
           $ref: "#/components/responses/500"
 
-  /v1/auth/logout:
+  /v1/auth/sign-out:
     post:
       tags:
         - Auths
@@ -126,7 +126,7 @@ paths:
           $ref: "#/components/responses/500"
           
           
-  /auth/forgot:
+  /auth/forget:
     post:
       tags:
         - Auths
