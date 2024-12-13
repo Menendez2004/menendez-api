@@ -20,29 +20,33 @@ servers:
 
 tags:
   - name: Auths
-    description: Authentufication to entrie to the e-comers
+    description: Endpoints for user `authentication`, including login, registration, and token management for accessing the E-commerce platform.
   - name: Users
-    description: Operations related to users
+    description: Endpoints for `managing user-related operations`, including profile retrieval, updates, and user status change.
   - name: Products
-    description: Operations related to products in the e-commerce platform
-  - name: Categories
-    description: Kind of product tha the e-commers manage
-  - name: Orders
-    description: Operations related to orders
-  - name: Carts
-    description: Operations related to user cart
+    description: Endpoints for `managing and retrieving` information about `products` available in the E-commerce platform.
   - name: Favorite Products
-    description: Operations related to favorite products from the user
-  - name: payments
-    description: (pending) related to product payments (card) (need to learn more about stripe)
+    description: Endpoints for managing and viewing a `user's favorite products` within the E-commerce platform.
+  - name: Categories
+    description: Endpoints for `managing and retrieving product categories` available in the E-commerce platform.
+  - name: Orders
+    description: Endpoints for `managing user orders` , including order creation, retrieval  , and status updates.
+  - name: Carts
+    description: Endpoints for managing a `user's shopping cart`, including adding, updating, and removing products.
+  - name: Payments
+    description: API endpoints for managing client user `payments` creating charges, processing refunds, retrieving transaction history, and managing stored payment methods (e.g., credit cards).
+
+
 
 paths:
-  /v1/auths/login:
+  /v1/auth/login:
     post:
       tags:
         - Auths
-      summary: User login
-      description: Authenticates a user and returns a token for accessing protected resources.
+      summary: Authenticates a user for accessing protected resources.
+      description: This endpoint verifies the user's credentials `(email and password)` and, if valid, generates a token that grants access to the system's secure areas. This token should be used for subsequent requests that require authentication.
+      security: 
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -77,39 +81,25 @@ paths:
                 example:
                   token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
                   user:
-                    id: 
-                     $ref: "#/components/schemas/UUID"
+                    id: '0a8f5b0-7d6e-4548-90d4-1090647c1ed5'
                     username: "johndoe"
                     email: "johndoe@example.com"
                     first_name: "John"
                     last_name: "Doe"
                     role_name: "customer"
-        "400":
-          description: Invalid login credentials
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                message: "Invalid email or password"
-                code: 400
+        "401":
+          $ref: '#/components/responses/401'
+
         "500":
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                message: "An unexpected error occurred"
-                code: 500
+          $ref: '#/components/responses/500'
 
 
-  /v1/auths/register:
+  /v1/auth/client-register:
     post:
       tags:
         - Auths
-      summary: User registration
-      description: Registers a new user and returns their account details.
+      summary: Registers a new user and returns their account details.
+      description: This endpoint allows a new user to sign up by providing necessary details (username, email, etc.). Upon successful registration, the user's account details are returned.
       requestBody:
         required: true
         content:
@@ -124,64 +114,35 @@ paths:
               schema:
                 $ref: "#/components/schemas/User"
               example:
-                id:
-                 $ref: "#/components/schemas/UUID"
-                username: "janedoe"
-                email: "janedoe@example.com"
-                first_name: "Jane"
-                last_name: "Doe"
-                role_name: "customer"
+                - id: '0a8f5b0-7d6e-4548-90d4-1090647c1ed5'
+                  username: "janedoe"
+                  email: "janedoe@example.com"
+                  first_name: "Jane"
+                  last_name: "Doe"
+                  role_name: "customer"
         "400":
-          description: Invalid registration details
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                message: "Email is required"
-                code: 400
+              $ref: "#/components/responses/400"
         "409":
-          description: User already exists
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                message: "User already exists"
-                code: 409
-        "500":
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                message: "An unexpected error occurred"
-                code: 500
+             $ref: "#/components/responses/409"
 
-  /v1/auths/logout:
+        "500":
+          $ref: "#/components/responses/500"
+
+  /v1/auth/logout:
     post:
       tags:
         - Auths
-      summary: User logout
-      description: Logs out the authenticated user by invalidating their token.
+      summary:  Logs out the authenticated user.
+      description: This endpoint invalidates the user's authentication token, effectively logging them out of the system. Access to protected resources will require a new valid token.
       security:
-        - api_key: []
+        - bearerAuth: []
       responses:
-        "200":
-          description: Logout successful
-        "401":
-          description: Unauthorized - No valid token provided
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+        "204":
+          $ref: "#/components/responses/204"
         "500":
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/500"
+
+
 
   /v1/users:
     get:
@@ -189,6 +150,8 @@ paths:
         - Users
       summary: Get all users
       description: Retrieve a list of all users in the system.
+      security: 
+        - bearerAuth: []
       responses:
         "200":
           description: A list of users
@@ -196,7 +159,7 @@ paths:
             application/json:
               schema:
                example:
-                - uuid: '40a8f5b0-7d6e-4548-90d4-1090647c1ed5'
+                - id: '40a8f5b0-7d6e-4548-90d4-1090647c1ed5'
                   first_name: "John"
                   last_name: "Doe"
                   username: "johndoe"
@@ -210,12 +173,11 @@ paths:
                     country: "USA"
                   role_name: "client"
               
-                - uuid: '1beafdee-f558-4603-8ed7-f3a0e97f24b3'
+                - id: '1beafdee-f558-4603-8ed7-f3a0e97f24b3'
                   first_name: "Jane"
                   last_name: "Doe"
                   username: "janedoe"
                   email: "janedoe@example.com"
-                  password: 'abc123'
                   address:
                   - street: "Calle cirunvalacion"
                     city: "Soyapango"
@@ -224,37 +186,22 @@ paths:
                     country: "El Salvador"
                 
         "400":
-          description: Invalid request parameters
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                message: "Invalid query parameter"
-                code: 400
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: '#/components/responses/401'
         "403":
-          description: Forbidden - Insufficient permissions
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                message: "You do not have access to this resource"
-                code: 403
+          $ref: "#/components/responses/403"
         "500":
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                message: "An unexpected error occurred"
-                code: 500
+          $ref: "#/components/responses/500"
+
     post:
       tags:
         - Users
       summary: Create a new user
-      description: Add a new user to the system.
+      description: Register a new user by providing necessary information, such as personal details, username, email, address, and role. Upon successful registration, the endpoint returns the newly created user complete profile.
+
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -268,7 +215,7 @@ paths:
             application/json:
               schema:
                example:
-                - uuid: '40a8f5b0-7d6e-4548-90d4-1090647c1ed5'
+                - id: '40a8f5b0-7d6e-4548-90d4-1090647c1ed5'
                   first_name: "John"
                   last_name: "Doe"
                   username: "johndoe"
@@ -283,30 +230,25 @@ paths:
                   role_name: "client"
               
         "400":
-          description: Invalid user data
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: '#/components/responses/401'
+        "403":
+          $ref: "#/components/responses/403"
         "409":
-          description: User or email already exists
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/409"
         "500":
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/500"
+        
 
   /v1/users/{id}:
     get:
       tags:
         - Users
       summary: Get a user by ID
-      description: Usage:<br /><ul><li>User UUID is required to get the information</li></ul>
+      description:  Obtain a specific user profile using their unique UUID. The endpoint returns detailed information, including personal data, account credentials, addresses, and assigned roles.
+      security:
+        - bearerAuth: []
       parameters:
         - name: id
           in: path
@@ -320,43 +262,36 @@ paths:
           content:
             application/json:
               example:
-                - uuid: '40a8f5b0-7d6e-4548-90d4-1090647c1ed5'
+                - id: '40a8f5b0-7d6e-4548-90d4-1090647c1ed5'
                   first_name: "John"
                   last_name: "Doe"
                   username: "johndoe"
                   email: "johndoe@example.com"
-                  password: 'abc123'
                   address:
                   - street: "Calle cirunvalacion"
                     city: "Soyapango"
                     state: "San Salvador"
                     postalCode: "CP 1116"
                     country: "El Salvador"
-                  role_name: "manager"
+                  role_name: "client"
               
         "400":
-          description: Invalid user ID
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "404":
-          description: User not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: '#/components/responses/401'
+        "403":
+          $ref: "#/components/responses/403"
         "500":
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/500"
+          
     put:
       tags:
         - Users
-      summary: Update a user
-      description: Modify the details of an existing user.
+      summary: Update a user status (It's mostly for the manager)
+      description: Update the operational status of a specific user, identified by their unique uuid. This is particularly useful for managing inactive, such 
+        as clients who have not placed any orders.
+      security:
+        - bearerAuth: [] #manager
       parameters:
         - name: id
           in: path
@@ -377,7 +312,7 @@ paths:
           content:
             application/json:
               example:
-                - uuid: '40a8f5b0-7d6e-4548-90d4-1090647c1ed5'
+                - id: '40a8f5b0-7d6e-4548-90d4-1090647c1ed5'
                   first_name: "Jonathan"
                   last_name: "alvares"
                   username: "jonaAlva"
@@ -391,29 +326,14 @@ paths:
                     country: "El Salvador"
                   role_name: "manager"
         "400":
-          description: Invalid update data
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "404":
-          description: User not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "409":
-          description: Conflict with existing data
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: '#/components/responses/401'
+        "403":
+          $ref: "#/components/responses/403"
         "500":
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/500"
+
                 
   /v1/users/{id}/status:
     patch:
@@ -421,6 +341,8 @@ paths:
         - Users
       summary: Update the state of the user 
       description: To update the client's status in case they never have registered orders
+      security: 
+        - bearerAuth: []
       parameters:
         - name: id
           in: path
@@ -442,66 +364,50 @@ paths:
             schema: 
               $ref: '#/components/schemas/UpdateStatus'
         "400":
-          description: Invalid user ID
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "404":
-          description: User not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: '#/components/responses/401'
+        "403":
+          $ref: "#/components/responses/403"
         "500":
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/500"
 
-  /v1/roducts:
+
+  /v1/products:
     get:
       tags:
         - Products
-      summary: Get all products
-      description: Retrieve a list of all products available in the store.
+      summary: Retrieve a list of all users in the system.
+      description:  This endpoint retrieves a comprehensive list of products available in the e-commerce platform. It includes key details such as product name, description, price, category, stock availability, and other essential attributes.
       responses:
         "200":
           description: A list of products
           content:
             application/json:
               example:
-                - uuid: "123e4567-e89b-12d3-a456-426614174000"
-                  name: "Zapatos Deportivos"
-                  description: "Zapatos ligeros y cómodos, ideales para actividades deportivas."
+                - id: "123e4567-e89b-12d3-a456-426614174000"
+                  name: "sport shoes"
+                  description: "Light and comfortable shoes, ideal for sports activities."
                   price: 99.99
                   category_id: "456e1234-e89b-98d3-a123-426614171234"
                   stock: 25
                   is_available: true
         "400":
-          description: Invalid request parameters
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/400"
         "401":
-          description: Unauthorized access
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: '#/components/responses/401'
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: '#/components/responses/404'
         "500":
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/500"
+
     post:
       tags:
         - Products
-      summary: Create a new product
-      description: Add a new product to the store.
+      summary: Add a new product to the catalog.
+      description: This endpoint allows the creation of a new product entry in the e-commerce platform. Users can provide details such as name, description, price, category, stock, and availability status. Upon successful creation, the product becomes available for purchase.
       requestBody:
         required: true
         content:
@@ -514,7 +420,7 @@ paths:
           content:
             application/json:
               example:
-                - uuid: "123e4567-e89b-12d3-a456-426614174000"
+                - id: "123e4567-e89b-12d3-a456-426614174000"
                   name: "Sport Shoes"
                   description: "Light and comfortable shoes, ideal for sports activities"
                   price: 99.99
@@ -522,36 +428,22 @@ paths:
                   stock: 25
                   is_available: true
         "400":
-          description: Invalid product data
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: '#/components/responses/401'
         "403":
-          description: Forbidden - Insufficient permissions
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/403"
         "409":
-          description: Conflict with existing product
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/409"
         "500":
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/500"
 
   /v1/products/{id}:
     get:
       tags:
         - Products
-      summary: Get a product by ID
-      description: Retrieve details of a specific product by its ID.
+      summary: Fetch product details by ID.
+      description: Retrieve detailed information about a specific product using its unique identifier. The response includes product name, description, price, category, stock availability, and current status.
       parameters:
         - name: id
           in: path
@@ -559,14 +451,14 @@ paths:
                         resource data for.
           required: true
           schema:
-            $ref: '#/components/schemas/UUIDShoes'
+            $ref: '#/components/schemas/UUID'
       responses:
         "200":
           description: Product details
           content:
             application/json:
               example:
-                - uuid: "123e4567-e89b-12d3-a456-426614174000"
+                - id: "123e4567-e89b-12d3-a456-426614174000"
                   name: "Sport Shoes"
                   description: "Light and comfortable shoes, ideal for sports activities."
                   price: 99.99
@@ -574,28 +466,18 @@ paths:
                   stock: 25
                   is_available: false
         "400":
-          description: Invalid product ID
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+            $ref: "#/components/responses/400"
         "404":
-          description: Product not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/404"
         "500":
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/500"
     put:
       tags:
         - Products
       summary: Update a product
       description: Modify the details of an existing product.
+      security:
+        - bearerAuth: []
       parameters:
         - name: id
           in: path
@@ -603,7 +485,7 @@ paths:
                         resource data for.
           required: true
           schema:
-            $ref: '#/components/schemas/UUIDShoes'
+            $ref: '#/components/schemas/UUID'
       requestBody:
         required: true
         content:
@@ -616,7 +498,7 @@ paths:
           content:
             application/json:
               example:
-                - uuid: "123e4567-e89b-12d3-a456-426614174000"
+                - id: "123e4567-e89b-12d3-a456-426614174000"
                   name: "casual shoes"
                   description: "Light and comfortable shoes, ideal for work events and going to school"
                   price: 99.99
@@ -624,34 +506,21 @@ paths:
                   stock: 25
                   is_available: true
         "400":
-          description: Invalid update data
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/400"
         "404":
-          description: Product not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/404"
         "409":
-          description: Conflict with existing data
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/409"
         "500":
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/500"
+
     delete:
       tags:
         - Products
       summary: Delete a product by ID
-      description: Remove a product from the store by its ID.
+      description: Delete a product entry from the catalog using its unique identifier. This operation is irreversible and should be performed with caution.
+      security:
+        - bearerAuth: []
       parameters:
         - name: id
           in: path
@@ -659,35 +528,25 @@ paths:
                         resource data for.
           required: true
           schema:
-            $ref: '#/components/schemas/UUIDShoes'
+            $ref: '#/components/schemas/UUID'
       responses:
-        "200":
-          description: Product deleted successfully
+        "204":
+            $ref: "#/components/responses/204"
         "400":
-          description: Invalid product ID
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+            $ref: "#/components/responses/400"
         "404":
-          description: Product not found or doesn't exist
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/404"
         "500":
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/500"
                 
   /v1/products/{id}/status:
     patch:
       tags:
         - Products
       summary: Update the state of the product 
-      description: To update the product if is out of stock and will be restored later 
+      description: This endpoint allows updating the status of a product to reflect changes such as "out of stock" or "restored". It ensures accurate inventory tracking and product availability for customers.
+      security:
+        - bearerAuth: []
       parameters:
         - name: id
           in: path
@@ -709,54 +568,122 @@ paths:
             schema: 
               $ref: '#/components/schemas/UpdateStatus'
         "400":
-          description: Invalid product ID
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/400"
         "404":
-          description: product not found or doesn't exist
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/404"
         "500":
-          description: Internal server error
+          $ref: "#/components/responses/500"
+
+                
+                
+                
+  /users/{userId}/favorite-products/{productId}/favorite:
+    post:
+      tags:
+        - Favorite Products
+      summary: Create Favorite Product Relationship
+      description: This endpoint enables users to curate their personal product wishlist by marking specific items as favorites. It provides a personalized shopping experience by allowing users to save products they find interesting or wish to purchase later. The system ensures data integrity by preventing duplicate favorites and validating both user and product existence.
+      security: 
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          description: The UUID of the user.
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: productId
+          in: path
+          description: The UUID of the product to be marked as favorite.
+          required: true
+          schema:
+            type: string
+            format: uuid
+
+      responses:
+        "201":
+          description: Product successfully marked as favorite.
           content:
             application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+              example:
+                id: "8b77b15a-64e2-42d1-9b23-2b7df0e66db1"
+                user_id: "a1c3d5f7-12b6-4d3a-8e2c-9e4a9c3a01b1"
+                product_id: "b1a9c7f3-d4c2-4d9a-8b5e-7c4d9a8f3e4d"
+                created_at: "2024-12-09T10:20:45.123Z"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: '#/components/responses/401'
+        "409":
+          $ref: "#/components/responses/409"
+        "500":
+          $ref: "#/components/responses/500"
+
+    delete:
+      tags:
+        - Favorite Products
+      summary: Remove a product from favorites
+      description: A user endpoint that allows customers to dynamically manage their favorite products list. This operation provides flexibility in product curation, enabling users to remove items from their favorites as their preferences or interests change.
+      security: 
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          description: The UUID of the user.
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: productId
+          in: path
+          description: The UUID of the product to be removed from favorites.
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          $ref: "#/components/responses/204"
+        "400":
+          $ref: "#/components/responses/400"
+        "404":
+          $ref: "#/components/responses/404"
+        "500":
+          $ref: "#/components/responses/500"
+
+
                 
-                
-                
-                
-                
+    
   /v1/categories:
     get:
       tags:
         - Categories
       summary: Get all categories
-      description: Retrieve a list of all categories.
+      description: Retrieve the complete list of categories available in the system. Each category entry includes relevant details.
       responses:
         "200":
-          description: A list of categories.
+          description: A list of categories.cha 
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/Category'
+        "400":
+          $ref: "#/components/responses/400"
+        "404":
+          $ref: "#/components/responses/404"
         "500":
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: "#/components/responses/500"
+                
     post:
       tags:
         - Categories
       summary: Create a new category
-      description: Add a new category to the database.
+      description: Add a new category to the database by providing the required details. This operation saves the category for future reference.
+      security: 
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -771,24 +698,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/Category'
         "400":
-          description: Invalid input
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: '#/components/responses/401'
+        "403":
+          $ref: "#/components/responses/403"
+        "409":
+          $ref: "#/components/responses/409"
         "500":
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: "#/components/responses/500"
+
 
   /v1/categories/{id}:
     get:
       tags:
         - Categories
       summary: Get a category by ID
-      description: Retrieve a specific category by its ID.
+      description: Retrieve detailed information about a specific category using its unique identifier (ID).
       parameters:
         - name: id
           in: path
@@ -803,23 +729,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Category'
+        "400":
+          $ref: "#/components/responses/400"
         "404":
-          description: Category not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: "#/components/responses/404"
         "500":
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: "#/components/responses/500"
+
     put:
       tags:
         - Categories
       summary: Update a category
-      description: Update the details of an existing category by its ID.
+      description: Modify the details of an existing category by specifying its unique identifier (ID) and providing the updated information.
+      security: 
+        - bearerAuth: []
       parameters:
         - name: id
           in: path
@@ -841,28 +764,21 @@ paths:
               schema:
                 $ref: '#/components/schemas/Category'
         "400":
-          description: Invalid input
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        "404":
-          description: Category not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: '#/components/responses/401'
+        "403":
+          $ref: "#/components/responses/403"
         "500":
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: "#/components/responses/500"
+
     delete:
       tags:
         - Categories
       summary: Delete a category
-      description: Remove a category from the database by its ID.
+      description: Permanently remove a category from the database using its unique identifier (ID). This is in case the e-commers is not going to handle that category anymore.
+      security: 
+        - bearerAuth: []
       parameters:
         - name: id
           in: path
@@ -872,26 +788,24 @@ paths:
             type: string
       responses:
         "204":
-          description: Category deleted successfully.
-        "404":
-          description: Category not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: "#/components/responses/204"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: '#/components/responses/401'
+        "403":
+          $ref: "#/components/responses/403"
         "500":
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          $ref: "#/components/responses/500"
     
   /v1/clients/orders/order-client:
     get:
       tags:
         - Orders
-      summary: get all orders
-      description: returns a list of all orders.
+      summary: Retrieve all orders
+      description: Return a list of all orders, including their details such as status, total amount, and payment information
+      security: 
+        - bearerAuth: []
       responses:
         "200":
           description: orders detail
@@ -903,38 +817,22 @@ paths:
                   $ref: "#/components/schemas/Order"
                   
         "400":
-          description: Invalid request parameters
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                message: "Invalid query parameter"
-                code: 400
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: '#/components/responses/401'
         "403":
-          description: Forbidden - Insufficient permissions
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                message: "You do not have access to this resource"
-                code: 403
+          $ref: "#/components/responses/403"
         "500":
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-              example:
-                message: "An unexpected error occurred"
-                code: 500
+          $ref: "#/components/responses/500"
+
                 
     post:
       tags:
         - Orders
       summary: create a new order 
-      description: allows to create a new order.
+      description: Add a new order by providing user identification, product details, quantities, and payment method. This endpoint creates a new order record in the system.
+      security: 
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -950,45 +848,39 @@ paths:
                 $ref: "#/components/schemas/Order"
                 
         "400":
-          description: Invalid order data
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: '#/components/responses/401'
         "403":
-          description: Forbidden - Insufficient permissions
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
+          $ref: "#/components/responses/403"
+        "409":
+          $ref: "#/components/responses/409"
         "500":
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/500"
                 
-  /v1/clients/orders/order-details/{id}:
+                
+  /v1/clients/orders/order-client-details/{id}:
     get:
       tags:
         - Orders
       summary: get an order
-      description: get the details of the order
+      description: Get detailed information about a specific order using its unique identifier (UUID). Includes status, total cost, and payment details.
+      security: 
+        - bearerAuth: []
       parameters:
         - name: id
           in: path
           description: The product UUID to update the state of the product.
           required: true
           schema:
-            $ref: '#/components/schemas/UUIDOrder'
+            $ref: '#/components/schemas/UUID'
       responses:
         "200":
           description: order was get succesfuly
           content:
             application/json:
                example:
-                - uuid: "8e700b8b-e32c-4f21-b44c-53cff3394f13"
+                - id: "8e700b8b-e32c-4f21-b44c-53cff3394f13"
                   user_uuid: "40a8f5b0-7d6e-4548-90d4-1090647c1ed5"
                   status: "completed"
                   total: 250.75
@@ -997,23 +889,13 @@ paths:
                   created_at: "2024-12-09T04:48:39.189Z"
                   updated_at: "2024-12-09T05:00:00.000Z"
         "400":
-          description: Invalid product ID
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "404":
-          description: Product not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: '#/components/responses/401'
+        "403":
+          $ref: "#/components/responses/403"
         "500":
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/500"
                 
                 
   /v1/clients/orders/order-client/{id}/status:
@@ -1021,14 +903,16 @@ paths:
       tags:
         - Orders
       summary: update an order
-      description: update an existing order
+      description: Modify the status of a specific order (e.g., marking it as completed, canceled, or in-progress) using its unique identifier (UUID). This action updates the order's lifecycle state.
+      security: 
+        - bearerAuth: []
       parameters:
         - name: id
           in: path
           description: The product UUID to update the state of the product.
           required: true
           schema:
-            $ref: '#/components/schemas/UUIDOrder'
+            $ref: '#/components/schemas/UUID'
       requestBody:
         required: true
         content:
@@ -1043,67 +927,57 @@ paths:
                example:
                 status: completed
         "400":
-          description: Invalid update data
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "404":
-          description: Product not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "409":
-          description: Conflict with existing data
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: '#/components/responses/401'
+        "403":
+          $ref: "#/components/responses/403"
         "500":
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-                
+          $ref: "#/components/responses/500" 
+          
   /v1/clients/orders/order-client/{id}:
     delete:
       tags:
         - Orders
       summary: Delete a order by ID
-      description: Remove an order from the system by their ID.
+      description:  Delete an order from the system permanently using its unique identifier (UUID). Once deleted, the order cannot be restored.
+      security: 
+        - bearerAuth: []
       parameters:
         - name: id
           in: path
           description: The product UUID to update the state of the product.
           required: true
           schema:
-            $ref: '#/components/schemas/UUIDOrder'
+            $ref: '#/components/schemas/UUID'
       responses:
         "204":
-          description: Order was deleted succesfully
+          $ref: "#/components/responses/204"
         "400":
-          description: Product not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: '#/components/responses/401'
+        "403":
+          $ref: "#/components/responses/403"
+        "500":
+          $ref: "#/components/responses/500"
                 
                 
-  /v1/users/carts/user-cart/{id}:
+  /v1/users/carts/users-cart/{id}:
     get:
       tags: 
         - Carts
-      summary: Get the cart of a specific user
-      description: Get the information to ensure what kind of product is going to be paid.
+      summary: Retrieve a specific user's cart
+      description: Retrieve detailed information about the specified user's cart, including the products, their quantities, and metadata. This information is critical to confirm the items before proceeding with payment.
+      security: 
+        - bearerAuth: []
       parameters:
         - name: id
           in: path
           description: The cart UUID to get the details of the cart.
           required: true
           schema:
-            $ref: '#/components/schemas/UUIDCarts'
+            $ref: '#/components/schemas/UUID'
       responses:
         "200":
           description: Information of the cart was successfully retrieved.
@@ -1116,29 +990,22 @@ paths:
                   quantity: 6
                   created_at: "2024-12-09T04:48:39.189Z"
         "400":
-          description: Invalid product ID.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "404":
-          description: Cart not found.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: '#/components/responses/401'
+        "403":
+          $ref: "#/components/responses/403"
         "500":
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-  /v1/users/carts/cart:
+          $ref: "#/components/responses/500"
+
+  /v1/users/carts/user-cart:
     post:
       tags: 
         - Carts
-      summary: Create a new cart entry
-      description: Add a product to the user's cart.
+      summary: Add a product to a user's cart
+      description: Create a new cart entry by associating a product with a user's cart. Specify the product ID, user ID, and quantity to complete the operation.
+      security: 
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -1157,31 +1024,32 @@ paths:
                 quantity: 2
                 created_at: "2024-12-09T04:48:39.189Z"
         "400":
-          description: Invalid input.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: '#/components/responses/401'
+        "403":
+          $ref: "#/components/responses/403"
+        "409":
+          $ref: "#/components/responses/409"
         "500":
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/500"
+
                 
   /v1/carts/users/user-cart/{id}:
     put:
       tags: 
         - Carts
-      summary: Update a cart entry by ID
-      description: Update the details of a cart entry by ID.
+      summary: Update a specific cart entry.
+      description: Update the details of a cart entry, such as product ID or quantity, using the cart's unique identifier (UUID). This operation ensures that the cart reflects accurate information.
+      security: 
+        - bearerAuth: []
       parameters:
         - name: id
           in: path
           description: The cart UUID to update.
           required: true
           schema:
-            $ref: '#/components/schemas/UUIDCarts'
+            $ref: '#/components/schemas/UUID'
       requestBody:
         required: true
         content:
@@ -1200,201 +1068,229 @@ paths:
                 quantity: 5
                 created_at: "2024-12-09T04:48:39.189Z"
         "400":
-          description: Invalid input.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "404":
-          description: Cart entry not found.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: '#/components/responses/401'
+        "403":
+          $ref: "#/components/responses/403"
         "500":
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/500"
                 
-    patch:
-      tags: 
-        - Carts
-      summary: Update the quantity of a cart entry
-      description: Update only the quantity field of a specific cart entry by ID.
-      parameters:
-        - name: id
-          in: path
-          description: The cart UUID to update.
-          required: true
-          schema:
-            $ref: '#/components/schemas/UUIDCarts'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                quantity:
-                  type: integer
-      responses:
-        "200":
-          description: Cart quantity updated successfully.
-          content:
-            application/json:
-              example:
-                id: "dfda53b4-b078-49fa-a52d-8938fdc396ee"
-                user_id: "40a8f5b0-7d6e-4548-90d4-1090647c1ed5"
-                product_id: "123e4567-e89b-12d3-a456-426614174000"
-                quantity: 8
-                created_at: "2024-12-09T04:48:39.189Z"
-        "400":
-          description: Invalid input.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "404":
-          description: Cart entry not found.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "500":
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
     delete:
       tags: 
         - Carts
       summary: Delete a cart entry
-      description: Remove a cart entry by ID.
+      description: Deletes a specific cart entry, identified by its unique ID, from the user's shopping cart. This operation is useful for removing unwanted or incorrect items or when the user no longer wants to buy.
+      security: 
+        - bearerAuth: []
       parameters:
         - name: id
           in: path
           description: The cart UUID to delete.
           required: true
           schema:
-            $ref: '#/components/schemas/UUIDCarts'
+            $ref: '#/components/schemas/UUID'
       responses:
         "204":
-          description: Cart entry deleted successfully.
-        "404":
-          description: Cart entry not found.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+          $ref: "#/components/responses/204"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: '#/components/responses/401'
+        "403":
+          $ref: "#/components/responses/403"
         "500":
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-                
-  /users/{userId}/favorite-products/{productId}/favorite:
+          $ref: "#/components/responses/500"
+
+  /payments:
     post:
       tags:
-        - Favorite Products
-      summary: Mark a product as a favorite
-      description: Mark a specific product as a favorite for the given user.
-      parameters:
-        - name: userId
-          in: path
-          description: The UUID of the user.
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: productId
-          in: path
-          description: The UUID of the product to be marked as favorite.
-          required: true
-          schema:
-            type: string
-            format: uuid
+        - Payments
+      security:
+        - bearerAuth: []
+      summary:  Create a new payment intent for an order.
+      description: >
+        `Auth: bearer`
+        
+        
+        Creates a Payment Intent with the requires_payment_method status and associates it with the provided order ID. Returns a 404 error if the order ID is not found.
+      requestBody:
+        content:
+          application/json:
+            example:
+              order_id: '58dd5992-a099-4197-a2f3-7cbaabec41e9'
+              stripe_api_version: 4.3
+              payment_intent_details:
+                amount: 123
+                currency: USD
       responses:
-        "201":
-          description: Product successfully marked as favorite.
-          content:
-            application/json:
-              example:
-                id: "8b77b15a-64e2-42d1-9b23-2b7df0e66db1"
-                user_id: "a1c3d5f7-12b6-4d3a-8e2c-9e4a9c3a01b1"
-                product_id: "b1a9c7f3-d4c2-4d9a-8b5e-7c4d9a8f3e4d"
-                created_at: "2024-12-09T10:20:45.123Z"
-        "400":
-          description: Invalid input or product is already marked as favorite.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "404":
-          description: User or product not found.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "500":
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-    delete:
+        '200':
+          description: payment intent created succesfully
+        '400':
+          $ref: "#/components/responses/400"
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: "#/components/responses/403"
+        '500':
+          description: unable to create payment intent with stripe. Error details.
+    get:
       tags:
-        - Favorite Products
-      summary: Remove a product from favorites
-      description: Remove a specific product from the user's list of favorites.
+        - Payments
+      summary:  Update payment status and mark intent as closed.
+      description: > 
+        `Auth: bearer`
+        
+        
+        Updates the payment status of an order and optionally marks the payment intent as closed. This endpoint is used for final updates to a payment intent's status.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: array of ids that are needing processing by the worker.
+        '401':
+          $ref: '#/components/responses/401'
+        '500':
+          $ref: "#/components/responses/500"
+          
+  /payments/{id}:
+    post:
+      tags:
+        - Payments
+      security:
+        - bearerAuth: []
+      summary: Update payment status and mark intent as closed.
+      description: >
+        `Auth: bearer`
+        
+        
+        Updates the payment status of an order and optionally marks the payment intent as closed. This endpoint is used for final updates to a payment intent's status.
       parameters:
-        - name: userId
-          in: path
-          description: The UUID of the user.
+        - in: path
+          name: id
           required: true
           schema:
             type: string
             format: uuid
-        - name: productId
-          in: path
-          description: The UUID of the product to be removed from favorites.
+      requestBody:
+        content:
+          application/json:
+            example:
+              closed: true
+              payment_status: 3
+      responses:
+        '200':
+          description: changes to payment made succesfully
+        '400':
+          $ref: "#/components/responses/400"
+        '401':
+          $ref: '#/components/responses/401'
+        '500':
+          $ref: "#/components/responses/500"
+          
+    put:
+      tags:
+        - Payments
+      security:
+        - bearerAuth: []
+      summary: Update payment details and confirm payment.
+      description: >
+        `Auth: bearer`
+        
+         Updates payment intent details, such as card information, and optionally confirms the payment. Follows Stripe's guidelines for managing payment intent status changes.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            examples:
+              updating with card info:
+                value:
+                  payment_details:
+                    card_number: 123123123
+                    cvc: 123123
+                  other_fields_to_update:
+                    - field1: value
+                    - field2: value
+                    - field3: value
+              customer clicked pay as a final step, we want to charge card now:
+                value:
+                  confirm_payment: true
+      responses:
+        '200':
+          description: payment intent updated succesfully AND/OR payment confirmation started succesfully
+        '400':
+          $ref: '#/components/responses/400'
+        '404':
+           $ref: "#/components/responses/404"
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: "#/components/responses/403"
+        '500':
+          description: 'An error ocurred when pushing payment details to stripe. Error details : ...'
+  /webhook:
+    post:
+      tags:
+        - Payments
+      security:
+        - bearerAuth: []
+      summary:  Receive Stripe webhook updates.
+      description: >
+        `Auth: bearer`
+        
+        
+         Receives event notifications from Stripe about payment intent updates, such as status changes or required actions. The primary goal is to validate the received data (e.g., JSON format) and store it in the incoming_payment_webhooks table for future processing by a worker. No business logic is executed at this stage. This ensures compliance with Stripe’s documentation, where webhooks should be treated as notifications, not triggers for immediate business operations.
+         
+      responses:
+        '200':
+          description: the event was recieved correctly.
+        '400':
+          $ref: "#/components/responses/400"
+        '404':
+          $ref: '#/components/responses/404'
+        '401':
+          $ref: '#/components/responses/401'
+          
+          
+  /webhook/{id}:
+    post:
+      tags:
+        - Payments
+      security:
+        - bearerAuth: []
+      summary:  Retrieve and lock webhook event data for processing.
+      description: >
+        `Auth: bearer`
+        
+        
+        Allows a worker to fetch the details of a specific webhook event by its ID and lock it to ensure no other worker processes the same event simultaneously. The endpoint also supports updating the processing status of the webhook event (e.g., in_progress). This is useful for coordinating distributed systems where multiple workers handle event processing in parallel.
+      requestBody:
+        content:
+          application/json:
+            example:
+              lock: true
+              status: in_progress
+      parameters:
+        - in: path
+          name: id
           required: true
           schema:
             type: string
             format: uuid
       responses:
-        "204":
-          description: Product successfully removed from favorites.
-        "400":
-          description: Invalid input or product is not marked as favorite.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "404":
-          description: User or product not found.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-        "500":
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-
-
-
-    
-    
-
-
+        '200':
+          description: webhook job data
+        '400':
+          $ref: "#/components/responses/400"
+        '401':
+          $ref: '#/components/responses/401'
+          
 components:
   schemas:
           
@@ -1415,9 +1311,11 @@ components:
     User:
       type: object
       properties:
-        uuid:
+        id:
           type: string
           format: uuid
+          items:
+            $ref: '#/components/schemas/UUID'
         first_name:
           type: string
         last_name:
@@ -1500,8 +1398,6 @@ components:
           type: boolean
           default: true
 
-              
-        
 
     ProductUpdate:
       type: object
@@ -1527,6 +1423,8 @@ components:
         id:
           type: string
           format: uuid
+          items: 
+            $ref: '#/components/schemas/UUID'
         name:
           type: string
         description:
@@ -1548,6 +1446,8 @@ components:
         id:
           type: string
           format: uuid
+          items: 
+            $ref: '#/components/schemas/UUID'
         user_id:
           type: string
           format: uuid
@@ -1577,6 +1477,8 @@ components:
         user_id:
           type: string
           format: uuid
+          items: 
+            $ref: '#/components/schemas/UUID'
         status:
           type: string
           enum:
@@ -1608,6 +1510,8 @@ components:
             type: string
             format: uuid
             description: "Unique identifier for the cart entry"
+            items:
+              $ref: '#/components/schemas/UUID'
           user_id:
             type: string
             format: uuid
@@ -1624,38 +1528,11 @@ components:
             format: timestamp
             description: "Timestamp indicating when the cart entry was created"
       required:
-         - id
-         - user_id
-         - product_id
-         - quantity
-         - created_at
-         
-         
-    FavoriteProduct:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          description: Unique identifier for the favorite entry.
-        user_id:
-          type: string
-          format: uuid
-          description: UUID of the user.
-        product_id:
-          type: string
-          format: uuid
-          description: UUID of the product marked as favorite.
-        created_at:
-          type: string
-          format: date-time
-          description: Timestamp indicating when the product was marked as favorite.
-      required:
-        - id
-        - user_id
-        - product_id
-        - created_at
-    
+          - id
+          - user_id
+          - product_id
+          - quantity
+          - created_at
     
     UUID:
       type: string
@@ -1663,25 +1540,6 @@ components:
       description: A universally unique identifier (UUID).
       example: "40a8f5b0-7d6e-4548-90d4-1090647c1ed5"
       
-      
-    UUIDShoes:
-      type: string
-      format: uuid
-      description: A universally unique identifier (UUID).
-      example: '123e4567-e89b-12d3-a456-426614174000'
-      
-    UUIDOrder:
-      type: string
-      format: uuid
-      description: A universally unique identifier (UUID).
-      example: '8e700b8b-e32c-4f21-b44c-53cff3394f13'
-      
-      
-    UUIDCarts:
-      type: string
-      format: uuid
-      description: A universally unique identifier (UUID).
-      example: 'dfda53b4-b078-49fa-a52d-8938fdc396ee'
       
     UpdateStatus:
       type: object
@@ -1692,19 +1550,76 @@ components:
       required:
         - is_active
         
-        
+  responses:
+  
+      204:
+        description: the request was successful
+        content:
+            application/json: 
+              example:
+                message: "The request was completed successfully "
+                code: 204
+      401:
+        description: Unauthorized - Invalid or expired token.
+        content:
+          application/json:
+            example:
+              message: "Unauthorized access"
+              code: 401
 
-    Error:
-      type: object
-      properties:
-        code:
-          type: string
-        message:
-          type: string
-        details:
-          type: string
+      400:
+        description: Bad Request - Validation or format errors.
+        content:
+          application/json:
+            example:
+              message: The server returned a `400 Bad Request` error. look your query
+              code: 400
+
+      404:
+        description: Not Found - The requested resource was not found or the count is zero.
+        content:
+          application/json:
+            example:
+              message: "Resource not found"
+              code: 404
+
+      403:
+        description: Forbidden - Access to the resource is denied.
+        content:
+          application/json:
+            example:
+              message: "The access to the requested resource is forbidden"
+              code: 403
+              
+      409:
+        description:  conflict with the current state of a resource
+        content:
+            application/json:
+              example:
+                message: "the resource already exist"
+                code: 409
+
+
+      429:
+        description: Too Many Requests - Rate limit exceeded.
+        content:
+          application/json:
+            example:
+              message: "Too many requests, rate limit exceeded"
+              code: 429
+
+      500:
+        description: Internal Server Error - An unexpected error occurred.
+        content:
+          application/json:
+            example:
+              message: "Internal server error"
+              code: 500
+
           
   securitySchemes:
-    api_key:
+    bearerAuth:
       type: http
-      scheme: bearer <your token>
+      scheme: bearer 
+      bearerFormat: JWT <your token>
+      description: "JWT Bearer token to access these api endpoints"
