@@ -415,7 +415,7 @@ paths:
   /emails:
     post:
       tags:
-        - automatic
+        - Email Sender
       security:
         - bearerAuth: []
       summary: 'Queues an email for sending.'
@@ -465,7 +465,7 @@ paths:
   /emails/{id}:
     put:
       tags:
-        - automatic
+        - Email Sender
       security:
         - bearerAuth: []
       summary: 'Updates the status of an email job'
