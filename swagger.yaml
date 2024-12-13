@@ -149,7 +149,7 @@ paths:
       tags:
         - Users
       summary: Get all users
-      description: Retrieve a list of all users in the system.
+      description: Retrieves a paginated `list of all registered users` in the system.Each user entry includes basic information such as ID, first name, last name, username, email, and role
       security: 
         - bearerAuth: []
       responses:
@@ -246,7 +246,7 @@ paths:
       tags:
         - Users
       summary: Get a user by ID
-      description:  Obtain a specific user profile using their unique UUID. The endpoint returns detailed information, including personal data, account credentials, addresses, and assigned roles.
+      description:  Obtain a `specific user profile` using their unique UUID. The endpoint returns detailed information, including personal data, account credentials, addresses, and assigned roles.
       security:
         - bearerAuth: []
       parameters:
@@ -288,8 +288,7 @@ paths:
       tags:
         - Users
       summary: Update a user status (It's mostly for the manager)
-      description: Update the operational status of a specific user, identified by their unique uuid. This is particularly useful for managing inactive, such 
-        as clients who have not placed any orders.
+      description: This Endpoint `Updates` the information of a `specific user`. Requires `manager-level` authorization.
       security:
         - bearerAuth: [] #manager
       parameters:
@@ -340,7 +339,7 @@ paths:
       tags:
         - Users
       summary: Update the state of the user 
-      description: To update the client's status in case they never have registered orders
+      description: This endpoint `Updates` the `status` of a `specific user`. This operation is typically used to manage inactive users, such as clients who have not placed any orders
       security: 
         - bearerAuth: []
       parameters:
@@ -475,7 +474,18 @@ paths:
       tags:
         - Products
       summary: Update a product
-      description: Modify the details of an existing product.
+      description: |
+        Updates the details of an existing product. This operation allows modification of the following product attributes:
+
+        <ul>
+          <li>name: The product's name.</li>
+          <li>description: A detailed description of the product.</li>
+          <li>price: The product's price.</li>
+          <li>category_id: The ID of the product's category.</li>
+          <li>stockThe current stock level of the product.</li>
+        </ul>
+
+        The product is identified by its unique UUID provided in the path parameter <code>id</code>. Requires authentication.
       security:
         - bearerAuth: []
       parameters:
@@ -544,7 +554,7 @@ paths:
       tags:
         - Products
       summary: Update the state of the product 
-      description: This endpoint allows updating the status of a product to reflect changes such as "out of stock" or "restored". It ensures accurate inventory tracking and product availability for customers.
+      description: This endpoint allows updating the status of a product to reflect changes such as <code>"out of stock" or "restored"</code>. It ensures accurate inventory tracking and product availability for customers.
       security:
         - bearerAuth: []
       parameters:
