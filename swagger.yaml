@@ -570,7 +570,7 @@ paths:
 
   /v1/products/{id}:
     get:
-      tags:
+      tags: 
         - Products
       summary: Fetch product details by ID.
       description: Retrieve detailed information about a specific product using its unique identifier. The response includes product name, description, price, category, stock availability, and current status.
@@ -939,40 +939,19 @@ paths:
         "500":
           $ref: "#/components/responses/500"
     
-  /v1/orders:
-    get:
-      tags:
-        - Orders
-      summary: Retrieve all orders
-      description: Return a list of all orders, including their details such as status, total amount, and payment information
-      security: 
-        - bearerAuth: []
-      responses:
-        "200":
-          description: orders detail
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Order"
-                  
-        "400":
-          $ref: "#/components/responses/400"
-        "401":
-          $ref: '#/components/responses/401'
-        "403":
-          $ref: "#/components/responses/403"
-        "500":
-          $ref: "#/components/responses/500"
-
-  /v1/clients/{Id}/orders:      
+  /v1/clients/{id}/orders:
     post:
       tags:
         - Orders
-      summary: create a new order 
+      summary: Create a new order
+      parameters:
+        - name: id
+          in: path
+          schema:
+            type: integer
+          required: true
       description: Add a new order by providing user identification, product details, quantities, and payment method. This endpoint creates a new order record in the system.
-      security: 
+      security:
         - bearerAuth: []
       requestBody:
         required: true
@@ -981,46 +960,70 @@ paths:
             schema:
               $ref: "#/components/schemas/OrderCreate"
       responses:
-        "201":
-          description: Pedido creado con éxito.
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Order"
-                
-        "400":
-          $ref: "#/components/responses/400"
-        "401":
-          $ref: '#/components/responses/401'
-        "403":
-          $ref: "#/components/responses/403"
-        "409":
-          $ref: "#/components/responses/409"
-        "500":
-          $ref: "#/components/responses/500"
-                
-                
-  /v1/orders/{Id}:
+          "201":
+            description: Order created successfully.
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/Order"
+          "400":
+            $ref: "#/components/responses/400"
+          "401":
+            $ref: "#/components/responses/401"
+          "403":
+            $ref: "#/components/responses/403"
+          "409":
+            $ref: "#/components/responses/409"
+          "500":
+            $ref: "#/components/responses/500"
+
+  /v1/orders:
     get:
       tags:
         - Orders
-      summary: get an order
+      summary: Retrieve all orders
+      description: Return a list of all orders, including their details such as status, total amount, and payment information.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Orders retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Order"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "500":
+          $ref: "#/components/responses/500"
+
+  /v1/orders/{id}:
+    get:
+      tags:
+        - Orders
+      summary: Retrieve an order
       description: Get detailed information about a specific order using its unique identifier (UUID). Includes status, total cost, and payment details.
-      security: 
+      security:
         - bearerAuth: []
       parameters:
         - name: id
           in: path
-          description: The product UUID to update the state of the product.
+          description: The unique identifier (UUID) of the order.
           required: true
           schema:
-            $ref: '#/components/schemas/UUID'
+            $ref: "#/components/schemas/UUID"
       responses:
         "200":
-          description: order was get succesfuly
+          description: Order retrieved successfully.
           content:
             application/json:
-               example:
+              example:
                 - id: "8e700b8b-e32c-4f21-b44c-53cff3394f13"
                   user_uuid: "40a8f5b0-7d6e-4548-90d4-1090647c1ed5"
                   status: "completed"
@@ -1032,54 +1035,53 @@ paths:
         "400":
           $ref: "#/components/responses/400"
         "401":
-          $ref: '#/components/responses/401'
+          $ref: "#/components/responses/401"
         "403":
           $ref: "#/components/responses/403"
         "500":
           $ref: "#/components/responses/500"
-                
-                
+
     delete:
       tags:
         - Orders
-      summary: Delete a order by ID
-      description:  Delete an order from the system permanently using its unique identifier (UUID). Once deleted, the order cannot be restored.
-      security: 
+      summary: Delete an order by ID
+      description: Delete an order from the system permanently using its unique identifier (UUID). Once deleted, the order cannot be restored.
+      security:
         - bearerAuth: []
       parameters:
         - name: id
           in: path
-          description: The product UUID to update the state of the product.
+          description: The unique identifier (UUID) of the order.
           required: true
           schema:
-            $ref: '#/components/schemas/UUID'
+            $ref: "#/components/schemas/UUID"
       responses:
-        "204":
-          $ref: "#/components/responses/204"
-        "400":
-          $ref: "#/components/responses/400"
-        "401":
-          $ref: '#/components/responses/401'
-        "403":
-          $ref: "#/components/responses/403"
-        "500":
-          $ref: "#/components/responses/500"
-          
-  /v1/orders/{orderId}/status:
+          "204":
+            $ref: "#/components/responses/204"
+          "400":
+            $ref: "#/components/responses/400"
+          "401":
+            $ref: "#/components/responses/401"
+          "403":
+            $ref: "#/components/responses/403"
+          "500":
+            $ref: "#/components/responses/500"
+    
+  /v1/orders/{id}/status:
     patch:
       tags:
         - Orders
-      summary: update an order
+      summary: Update an order
       description: Modify the status of a specific order (e.g., marking it as completed, canceled, or in-progress) using its unique identifier (UUID). This action updates the order's lifecycle state.
-      security: 
+      security:
         - bearerAuth: []
       parameters:
         - name: id
           in: path
-          description: The product UUID to update the state of the product.
+          description: The unique identifier (UUID) of the order to update.
           required: true
           schema:
-            $ref: '#/components/schemas/UUID'
+            $ref: "#/components/schemas/UUID"
       requestBody:
         required: true
         content:
@@ -1088,21 +1090,20 @@ paths:
               $ref: "#/components/schemas/OrderUpdate"
       responses:
         "200":
-          description: Order updated succesfully
+          description: Order updated successfully.
           content:
             application/json:
-               example:
-                status: completed
+              example:
+                status: "completed"
         "400":
           $ref: "#/components/responses/400"
         "401":
-          $ref: '#/components/responses/401'
+          $ref: "#/components/responses/401"
         "403":
           $ref: "#/components/responses/403"
         "500":
-          $ref: "#/components/responses/500" 
-          
-                
+          $ref: "#/components/responses/500"
+
                 
   /v1/users/carts/{id}:
     get:
