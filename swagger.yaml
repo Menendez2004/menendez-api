@@ -68,8 +68,17 @@ paths:
                   format: password
                   example: "incriptedPassword!"
       responses:
-        "204":
-          $ref: '#/components/responses/204'
+        "201":
+          description: User authenticated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    format: jwt
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjU4YzIzZjU1LTBkYTgtNDRlMy1iZDg4LTY2ZWU4Y2ZiM2IxMiIsInJvbCI6Im1hbmFnZXIifQ.zXjFaoW3KKKAOQulIacdQ8PHPR8RT83IfdtBWAGRdRg"
         "401":
           $ref: '#/components/responses/401'
 
