@@ -10,7 +10,7 @@ type Order {
 
     #relation fields, all orders have a user and a list of order items (this can be acceded by the user and the manager)
     user: User!
-    orderItems: [OrderItem!]!
+    orderItems: [OrderItem!]! #because the order can have multiple products so that why has the "s" at the end
     payments: [StripePayment!]!
 }
 
@@ -60,5 +60,5 @@ type Mutation {
 
     deleteOrder(id: ID!): Boolean! # Delete an order
 
-    OrderStatus(id: ID!, newStatus: OrderStatus!): Order! #here the manager can change the status of the order to accept or cancel it
+    updateOrderStatus(id: ID!, newStatus: OrderStatus!): Order! #here the manager can change the status of the order to accept or cancel it
 }

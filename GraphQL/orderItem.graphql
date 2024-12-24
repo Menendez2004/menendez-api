@@ -1,0 +1,14 @@
+type OrderItem {
+    id: ID!
+    orderId: ID!
+    productId: ID!
+    unitPrice: Float!
+    quantity: Int!
+    subTotal: Float!
+    total: Float!
+
+    order: Order
+    product: Product!
+}
+
+#Im gonna use dataloader to avoid n+1 problem   

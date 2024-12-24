@@ -1,17 +1,18 @@
 type ProductImage {
     id: ID!
-    uuid: UUID! 
+    uuid: UUID! ##im gonna use this to manage the images 
     productId: UUID!
+    path: String!
 }
 
 input CreateProductImageInput {
     productId: ID!
-    images: [LoadImage!]!
+    files: [Upload!]!
 }
 
 type Query {
     productImage(id: ID!): ProductImage
-    productImages(productId: ID!): [ProductImage!]! #we gonna manage more than one image per product?
+    getAllProductImages(productId: ID!): [ProductImage!]! #we gonna manage more than one image per product
 }
 
 type Mutation {

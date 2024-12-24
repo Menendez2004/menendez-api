@@ -9,7 +9,7 @@ type User {
 }
 
 
-type MySelf {
+type Me {
     id: ID!
     firstName: String!
     lastName: String!
@@ -35,18 +35,18 @@ input SignInInput {
     email: String!
     password: String!
 }
-input AccesTokenInput {
+input AccessTokenInput {
     accessToken: String!
 }
 
-input ResetPassInput {
+input ResetPasswordInput {
     resetToken: String!
     newPassword: String!
     confirmNewPassword: String!
 }
 
 type Query {
-    mySelf: MySelf # Returns the user's information if the user is authenticated
+    mySelf: Me # Returns the user's information if the user is authenticated
 }
 
 type Mutation {
@@ -55,6 +55,6 @@ type Mutation {
     # Sends a reset Token to the user's email if it exists
     forgotPassword(email: String!): Boolean! # Returns true if its possible to send the email
     #  Use the reset Token from forgotPassword email and sets the new password for the user
-    resetPassword(input: ResetPassInput!): AuthPayload!
+    resetPassword(input: ResetPasswordInput!): AuthPayload!
 
 }

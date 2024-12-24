@@ -61,7 +61,7 @@ input ProductSort {
 input ProductFilterOptions {
     name: String
     price: Float
-    categoryId: ID
+    categoryName: String    
     isAvailable: Boolean
 }
 

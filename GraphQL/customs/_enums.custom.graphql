@@ -1,4 +1,4 @@
-# Create Generic Sort by property name ()
+# Create Generic Sort by property name
 enum SortFilterby {
   ASC
   DESC
@@ -14,3 +14,7 @@ enum StripePaymentStatus {
   requires_payment_method
   succeeded
 }
+
+
+##The reason for having both id and uuid in the schemas is for I can use the numeric IDs for internal operations that require high performance, 
+#while the UUIDs will be used to integrate with external systems or guarantee uniqueness, in this case I will use the uuid for Stripe consumption
