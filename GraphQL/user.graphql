@@ -1,0 +1,60 @@
+type User {
+    id: ID!
+    uuid: UUID!
+    firstName: String!
+    lastName: String!
+    userName: String!
+    email: String!
+    createdAt: DateTime!
+}
+
+
+type MySelf {
+    id: ID!
+    firstName: String!
+    lastName: String!
+    email: String!
+    roles: [String!]!
+}
+
+type AuthPayload {
+    accessToken: String!
+    exp: Int! 
+    roles: [String!]!
+}
+
+# INPUTS
+input SignUpInput {
+    firstName: String!
+    lastName: String!
+    email: String!
+    password: String!
+}
+
+input SignInInput {
+    email: String!
+    password: String!
+}
+input AccesTokenInput {
+    accessToken: String!
+}
+
+input ResetPassInput {
+    resetToken: String!
+    newPassword: String!
+    confirmNewPassword: String!
+}
+
+type Query {
+    mySelf: MySelf # Returns the user's information if the user is authenticated
+}
+
+type Mutation {
+    signUp(input: SignUpInput!): Boolean! # Returns true if the user is created
+    signIn(input: SignInInput!): AuthPayload!
+    # Sends a reset Token to the user's email if it exists
+    forgotPassword(email: String!): Boolean! # Returns true if its possible to send the email
+    #  Use the reset Token from forgotPassword email and sets the new password for the user
+    resetPassword(input: ResetPassInput!): AuthPayload!
+
+}

@@ -1,0 +1,83 @@
+type Product {
+    id: ID!
+    uuid: UUID!
+    name: String!
+    description: String
+    price: Float!
+    categoryId: ID!
+    stock: Int!
+    isAvailable: Boolean!
+    createdAt: Datetime!
+    updatedAt: Datetime!
+
+
+    # like filter
+
+    likesCount: Int!
+    isLiked: Boolean!
+    
+}
+
+type ProductPagination {
+    collection: [Product!]!
+    meta: PaginationMeta!
+}
+
+input CreateProductInput {
+    name: String!
+    description: String!
+    price: Float!
+    categoryId: ID!
+    stock: Int!
+    isAvailable: Boolean!
+}
+
+
+input UpdateProductInput {
+    name: String
+    description: String
+    price: Float
+    categoryId: ID
+    stock: Int
+    isAvailable: Boolean
+}
+
+enum ProductSortBy {
+    NAME
+    PRICE 
+    CATEGORY_ID
+    IS_AVAILABLE
+}
+
+
+#SORT
+
+input ProductSort {
+    sortBy: ProductSortBy!
+    order: SortFilterby!
+}
+
+#FilterOpion
+input ProductFilterOptions {
+    name: String
+    price: Float
+    categoryId: ID
+    isAvailable: Boolean
+}
+
+type Query {
+    products(
+        pagination: PaginationSizeInput
+        filter: ProductFilterOptions
+        orderBy: ProductSort
+    ): ProductPagination!
+
+    product(id: ID!): Product!
+}
+
+type Mutation {
+    #all mutations are for managers
+    createProduct(input: CreateProductInput!): Product!
+    updateProduct(id: ID!, input: UpdateProductInput!): Product!
+    deleteProduct(id: ID!): Boolean! #true for success, false for failure
+}

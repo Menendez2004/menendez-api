@@ -1,0 +1,12 @@
+# CATEGORY DEFINITIONS
+type Category {
+    id: ID!
+    uuid: UUID!
+    name: String!
+}
+
+type CategoryQuery {
+    # Get all categories 
+    categories(name: String): [Category!]!
+
+}

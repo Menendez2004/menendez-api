@@ -1,0 +1,13 @@
+type StripePayment {
+    id: ID!
+    orderId: ID!
+    amount: Float!
+    currency: String!
+    stripePaymentId: String!
+    stripePaymentIntent: StripePaymentStatus!
+    stripeWebhookData: String
+    createdAt: DateTime!
+    updatedAt: DateTime!
+
+    order: Order
+}

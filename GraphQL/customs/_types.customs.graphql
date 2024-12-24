@@ -1,0 +1,15 @@
+#pagination for products and other types of data 
+
+input PaginationSizeInput {
+    page: Int = 1
+    limit: Int = 20
+}
+
+type PaginationMeta {
+    totalPages: Int!
+    page: Int!
+    limit: Int!
+    perPage: Int! #number of page per page
+}
+
+

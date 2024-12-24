@@ -1,38 +1,16 @@
--- Create ENUM Types first
-CREATE TYPE order_status_enum AS ENUM (
-    'PENDING',
-    'PAID',
-    'SHIPPED',
-    'DELIVERED',
-    'CANCELLED'
-);
+CREATE TYPE payment_methods AS ENUM ('CARD', 'PAYPAL');
+CREATE TYPE order_status AS ENUM ('PENDING', 'PAID', 'SHIPPED', 'DELIVERED', 'CANCELLED');
 
-CREATE TYPE payment_method_enum AS ENUM (
-    'CREDIT_CARD',
-    'PAYPAL'
-);
 
--- Create base tables first (no foreign keys)
+-- Roles Table
 CREATE TABLE roles (
     id UUID PRIMARY KEY,
     code VARCHAR NOT NULL,
     name VARCHAR NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
-CREATE TABLE categories (
-    id UUID PRIMARY KEY,
-    name VARCHAR NOT NULL,
-    description TEXT,
-    is_active BOOLEAN DEFAULT TRUE
-);
-
-CREATE TABLE token_types (
-    id UUID PRIMARY KEY,
-    token_name VARCHAR UNIQUE NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
+-- Users Table
 CREATE TABLE users (
     id UUID PRIMARY KEY,
     first_name VARCHAR NOT NULL,
@@ -41,135 +19,122 @@ CREATE TABLE users (
     email VARCHAR UNIQUE NOT NULL,
     password VARCHAR NOT NULL,
     addresses TEXT[],
-    role_id UUID,
+    role_id UUID REFERENCES roles(id),
     is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
+-- Carts Table
+CREATE TABLE carts (
+    id UUID PRIMARY KEY,
+    user_id UUID REFERENCES users(id) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+-- Categories Table
+CREATE TABLE categories (
+    id UUID PRIMARY KEY,
+    name VARCHAR NOT NULL,
+    description TEXT NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE NOT NULL
+);
+-- Products Table
 CREATE TABLE products (
     id UUID PRIMARY KEY,
     name VARCHAR NOT NULL,
-    description TEXT,
+    description TEXT NOT NULL,
     price DECIMAL NOT NULL,
-    category_id UUID,
-    stock INT DEFAULT 0,
+    category_id UUID REFERENCES categories(id) NOT NULL,
+    stock INT NOT NULL,
     is_available BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP
 );
-
-CREATE TABLE tokens (
+-- Cart Details Table
+CREATE TABLE cart_details (
     id UUID PRIMARY KEY,
-    user_id UUID NOT NULL,
-    token_type UUID NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    cart_id UUID REFERENCES carts(id) NOT NULL,
+    product_id UUID REFERENCES products(id) NOT NULL,
+    quantity INT NOT NULL
 );
 
+
+-- Product Images Table
 CREATE TABLE product_images (
     id UUID PRIMARY KEY,
-    product_id UUID NOT NULL,
-    url VARCHAR UNIQUE NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    product_id UUID REFERENCES products(id) NOT NULL,
+    url VARCHAR NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
-CREATE TABLE favorite_products (
+
+-- Favorite Products Table
+CREATE TABLE favorites (
     id UUID PRIMARY KEY,
-    user_id UUID NOT NULL,
-    product_id UUID NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    user_id UUID REFERENCES users(id) NOT NULL,
+    product_id UUID REFERENCES products(id) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
+-- Orders Table
 CREATE TABLE orders (
     id UUID PRIMARY KEY,
-    user_id UUID NOT NULL,
-    status order_status_enum NOT NULL,
+    user_id UUID REFERENCES users(id) NOT NULL,
+    status order_status NOT NULL,
     total DECIMAL NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP
 );
 
-CREATE TABLE order_details (
+-- Order Details Table
+CREATE TABLE order_items (
     id UUID PRIMARY KEY,
-    order_id UUID NOT NULL,
-    product_id UUID NOT NULL,
+    order_id UUID REFERENCES orders(id) NOT NULL,
+    product_id UUID REFERENCES products(id) NOT NULL,
+    cart_id UUID REFERENCES carts(id) NOT NULL,
     quantity INT NOT NULL,
-    unit_price DECIMAL NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    unit_price DECIMAL NOT NULL
+);
+-- Token Types Table
+CREATE TABLE token_types (
+    id UUID PRIMARY KEY,
+    token_name VARCHAR NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
+-- Tokens Table
+CREATE TABLE tokens (
+    id UUID PRIMARY KEY,
+    user_id UUID REFERENCES users(id) NOT NULL,
+    token_type UUID REFERENCES token_types(id) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+-- Payments Table
 CREATE TABLE payments (
     id UUID PRIMARY KEY,
-    order_id UUID NOT NULL,
-    payment_method payment_method_enum NOT NULL,
-    stripe_payment_intent VARCHAR,
-    total_payment DECIMAL NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    order_id UUID REFERENCES orders(id) NOT NULL,
+    payment_status payment_methods NOT NULL,
+    stripe_payment_intent VARCHAR NOT NULL,
+    stripe_payment_id VARCHAR NOT NULL,
+    stripe_api_version VARCHAR NOT NULL,
+    total_payment JSON NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
-ALTER TABLE users
-    ADD CONSTRAINT fk_users_role_id 
-    FOREIGN KEY (role_id) 
-    REFERENCES roles(id) 
-    ON DELETE SET NULL;
-
-ALTER TABLE products
-    ADD CONSTRAINT fk_products_category_id 
-    FOREIGN KEY (category_id) 
-    REFERENCES categories(id) 
-    ON DELETE SET NULL;
-
-ALTER TABLE tokens
-    ADD CONSTRAINT fk_tokens_user_id 
-    FOREIGN KEY (user_id) 
-    REFERENCES users(id) 
-    ON DELETE CASCADE,
-    ADD CONSTRAINT fk_tokens_token_type 
-    FOREIGN KEY (token_type) 
-    REFERENCES token_types(id) 
-    ON DELETE CASCADE;
-
-ALTER TABLE product_images
-    ADD CONSTRAINT fk_product_images_product_id 
-    FOREIGN KEY (product_id) 
-    REFERENCES products(id) 
-    ON DELETE CASCADE;
-
-ALTER TABLE favorite_products
-    ADD CONSTRAINT fk_favorite_products_user_id 
-    FOREIGN KEY (user_id) 
-    REFERENCES users(id) 
-    ON DELETE CASCADE,
-    ADD CONSTRAINT fk_favorite_products_product_id 
-    FOREIGN KEY (product_id) 
-    REFERENCES products(id) 
-    ON DELETE CASCADE;
-
-ALTER TABLE orders
-    ADD CONSTRAINT fk_orders_user_id 
-    FOREIGN KEY (user_id) 
-    REFERENCES users(id) 
-    ON DELETE CASCADE;
-
-ALTER TABLE order_details
-    ADD CONSTRAINT fk_order_details_order_id 
-    FOREIGN KEY (order_id) 
-    REFERENCES orders(id) 
-    ON DELETE CASCADE,
-    ADD CONSTRAINT fk_order_details_product_id 
-    FOREIGN KEY (product_id) 
-    REFERENCES products(id) 
-    ON DELETE CASCADE;
-
-ALTER TABLE payments
-    ADD CONSTRAINT fk_payments_order_id 
-    FOREIGN KEY (order_id) 
-    REFERENCES orders(id) 
-    ON DELETE CASCADE;
-
-CREATE INDEX idx_products_category ON products(category_id);
-CREATE INDEX idx_orders_user ON orders(user_id);
-CREATE INDEX idx_order_details_order ON order_details(order_id);
-CREATE INDEX idx_order_details_product ON order_details(product_id);
-CREATE INDEX idx_tokens_user ON tokens(user_id);
-CREATE INDEX idx_tokens_type ON tokens(token_type);
+-- Add Foreign Keys
+ALTER TABLE carts ADD CONSTRAINT fk_carts_user_id FOREIGN KEY (user_id) REFERENCES users(id);
+ALTER TABLE cart_details ADD CONSTRAINT fk_cart_details_cart_id FOREIGN KEY (cart_id) REFERENCES carts(id);
+ALTER TABLE cart_details ADD CONSTRAINT fk_cart_details_product_id FOREIGN KEY (product_id) REFERENCES products(id);
+ALTER TABLE products ADD CONSTRAINT fk_products_category_id FOREIGN KEY (category_id) REFERENCES categories(id);
+ALTER TABLE product_images ADD CONSTRAINT fk_product_images_product_id FOREIGN KEY (product_id) REFERENCES products(id);
+ALTER TABLE favorites ADD CONSTRAINT fk_favorites_user_id FOREIGN KEY (user_id) REFERENCES users(id);
+ALTER TABLE favorites ADD CONSTRAINT fk_favorites_product_id FOREIGN KEY (product_id) REFERENCES products(id);
+ALTER TABLE orders ADD CONSTRAINT fk_orders_user_id FOREIGN KEY (user_id) REFERENCES users(id);
+ALTER TABLE order_items ADD CONSTRAINT fk_order_items_order_id FOREIGN KEY (order_id) REFERENCES orders(id);
+ALTER TABLE order_items ADD CONSTRAINT fk_order_items_product_id FOREIGN KEY (product_id) REFERENCES products(id);
+ALTER TABLE order_items ADD CONSTRAINT fk_order_items_cart_id FOREIGN KEY (cart_id) REFERENCES carts(id);
+ALTER TABLE payments ADD CONSTRAINT fk_payments_order_id FOREIGN KEY (order_id) REFERENCES orders(id);
+ALTER TABLE tokens ADD CONSTRAINT fk_tokens_user_id FOREIGN KEY (user_id) REFERENCES users(id);
+ALTER TABLE tokens ADD CONSTRAINT fk_tokens_token_type FOREIGN KEY (token_type) REFERENCES token_types(id);

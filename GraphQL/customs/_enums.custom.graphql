@@ -1,0 +1,16 @@
+# Create Generic Sort by property name ()
+enum SortFilterby {
+  ASC
+  DESC
+}
+
+
+#https://docs.stripe.com/api/setup_intents/object 
+enum StripePaymentStatus {
+  canceled
+  processing
+  requires_action
+  requires_confirmation
+  requires_payment_method
+  succeeded
+}

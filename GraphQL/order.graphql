@@ -1,0 +1,64 @@
+type Order {
+    id: ID!
+    uuid: UUID!
+    userId: ID!
+    products: [Product!]!
+    total: Float!
+    status: OrderStatus!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+
+    #relation fields, all orders have a user and a list of order items (this can be acceded by the user and the manager)
+    user: User!
+    orderItems: [OrderItem!]!
+    payments: [StripePayment!]!
+}
+
+enum OrderStatus {
+    PENDING     #waiting for payment if the user forgot to pay or the payment is not completed
+    COMPLETED
+    CANCELLED
+}
+type ConfirmationPayment{
+    confirmPayment: Boolean! 
+}
+
+#payload 
+type OrderPayload {
+    order: Order!
+    stripePaymentId: String! #  "id": "seti_1Mm8s8LkdIwHu7ix0OXBfTRG" example of stripe payment id that's whys is string
+}
+
+# QUERY FILTER INPUTS
+input OrderFilterInput {
+    status: OrderStatus
+    total: Float # amount of the order (total from all products)
+}
+
+
+# pagination for orders
+type Query {
+    orders(
+        pagination: PaginationInput
+        status: OrderStatus # Optional filter by status
+    ): OrderPagination!
+
+    #the client can get the order by id but the manager can retrieve all the orders
+    orders(getBy: OrderFilterInput): [Order!]!
+
+    order(id: ID!): Order! #Same as the previous one but by id, the users just can get their orders
+
+    orderPayment(id: ID!): StripePayment!
+    
+}
+
+
+type Mutation {
+    createOrder(input: CreateOrderInput!): OrderPayload! 
+
+    updateOrder(id: ID!, input: UpdateOrderInput!): Order! # Update an order
+
+    deleteOrder(id: ID!): Boolean! # Delete an order
+
+    OrderStatus(id: ID!, newStatus: OrderStatus!): Order! #here the manager can change the status of the order to accept or cancel it
+}

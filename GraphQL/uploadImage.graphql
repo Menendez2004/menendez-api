@@ -1,0 +1,20 @@
+type ProductImage {
+    id: ID!
+    uuid: UUID! 
+    productId: UUID!
+}
+
+input CreateProductImageInput {
+    productId: ID!
+    images: [LoadImage!]!
+}
+
+type Query {
+    productImage(id: ID!): ProductImage
+    productImages(productId: ID!): [ProductImage!]! #we gonna manage more than one image per product?
+}
+
+type Mutation {
+    createProductImage(input: CreateProductImageInput!): [ProductImage!]! #just for managers
+    deleteProductImage(id: ID!): Boolean!
+}

@@ -1,0 +1,7 @@
+scalar Datetime
+
+scalar UUID
+
+scalar UploadFiles
+
+scalar LoadImage

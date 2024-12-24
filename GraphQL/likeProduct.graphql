@@ -1,0 +1,12 @@
+type ProductLiked {
+    id: ID!
+    productId: ID!
+    userId: ID!
+    createdAt: DateTime!
+}
+
+type mutation {
+    likeProduct(productId: ID!): Boolean! 
+
+    unlikeProduct(productId: ID!): Boolean!
+}   

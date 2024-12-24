@@ -1,0 +1,35 @@
+type CartPayload {
+    userId: ID!
+    productId: ID!
+    quantity: Int!
+    #SUM 
+    unitPrice: Float!
+    subTotal: Float!
+    total: Float!
+}
+
+type CartItemPayload {
+    items: [CartPayload!]!
+    subTotal: Float!
+    total: Float!
+}
+
+input CreateCartItemInput {
+    productId: ID!
+    quantity: Int!
+}
+
+type Query {
+    #to see items
+    getCartItems: CartItemPayload!
+}
+
+type mutation {
+    #to add items
+    addCartItem(input: CreateCartItemInput!): CartPayload!
+    updateProductQuantity(input: CreateCartItemInput): CartPayload!
+    #to remove items
+    removeCartItem(productId: ID!): Boolean|
+}
+
+#need pagination  ?

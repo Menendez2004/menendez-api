@@ -135,7 +135,7 @@ paths:
           $ref: "#/components/responses/500"
           
           
-  /auth/forget:
+  /v1/auth/forget:
     post:
       tags:
         - Auths
@@ -160,7 +160,7 @@ paths:
           $ref: "#/components/responses/404"
         '429':
           $ref: '#/components/responses/429'
-  /auth/reset:
+  /v1/auth/reset:
     post:
       tags:
         - Auths
@@ -421,7 +421,7 @@ paths:
           $ref: "#/components/responses/500"
           
           
-  /emails:
+  /v1/emails:
     post:
       tags:
         - Emails Senders
@@ -471,7 +471,7 @@ paths:
           $ref: "#/components/responses/404"
           
           
-  /emails/{id}:
+  /v1/emails/{id}:
     put:
       tags:
         - Emails Senders
@@ -718,7 +718,7 @@ paths:
                 
                 
                 
-  /users/{userId}/favorite-products/{productId}/favorite:
+  /v1/users/{userId}/favorites/{productId}:
     post:
       tags:
         - Favorite Products
@@ -939,7 +939,7 @@ paths:
         "500":
           $ref: "#/components/responses/500"
     
-  /v1/clients/{id}/orders:
+  /v1/orders:
     post:
       tags:
         - Orders
@@ -977,7 +977,6 @@ paths:
           "500":
             $ref: "#/components/responses/500"
 
-  /v1/orders:
     get:
       tags:
         - Orders
@@ -1105,7 +1104,7 @@ paths:
           $ref: "#/components/responses/500"
 
                 
-  /v1/users/carts/{id}:
+  /v1/carts/{userId}:
     get:
       tags: 
         - Carts
@@ -1140,7 +1139,7 @@ paths:
         "500":
           $ref: "#/components/responses/500"
 
-  /v1/users/carts/user-cart:
+  /v1/carts:
     post:
       tags: 
         - Carts
@@ -1177,7 +1176,7 @@ paths:
           $ref: "#/components/responses/500"
 
                 
-  /v1/carts/users/{id}:
+  /v1/carts/{id}:
     put:
       tags: 
         - Carts
@@ -1244,7 +1243,7 @@ paths:
         "500":
           $ref: "#/components/responses/500"
 
-  /payments:
+  /v1/payments:
     post:
       tags:
         - Payments
@@ -1295,7 +1294,7 @@ paths:
         '500':
           $ref: "#/components/responses/500"
           
-  /payments/{id}:
+  /v1/payments/{id}:
     post:
       tags:
         - Payments
@@ -1376,7 +1375,7 @@ paths:
           $ref: "#/components/responses/403"
         '500':
           description: 'An error ocurred when pushing payment details to stripe. Error details : ...'
-  /webhook:
+  /v1/webhook:
     post:
       tags:
         - Payments
@@ -1400,7 +1399,7 @@ paths:
           $ref: '#/components/responses/401'
           
           
-  /webhook/{id}:
+  /v1/webhook/{id}:
     post:
       tags:
         - Payments
