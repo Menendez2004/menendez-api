@@ -25,10 +25,10 @@ type Query {
 }
 
 type mutation {
-    #to add items
     addCartItem(input: CreateCartItemInput!): CartPayload!
+    
     updateProductQuantity(input: CreateCartItemInput): CartPayload!
-    #to remove items
+
     removeCartItem(productId: ID!): Boolean|
 }
 
